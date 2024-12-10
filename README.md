@@ -1,7 +1,7 @@
 # 📣Noiser
 `Current state : Not production ready. Started this Fall 2024.`
 ## 🎧 _A dead-simple music-player_
-Noiser is a web-based music player client. It uses (only) Gonic (for now) as a music-server, following the [subsonic-api](https://subsonic.org/pages/api.jsp).
+Noiser is a web-based music player client. It uses (only) Gonic (for now) as a music-server, following the [subsonic-api](https://subsonic.org/pages/api.jsp).<br>
 What you can basically expect right now from this software :
 - Browse your music collection (folder-navigation + statistical folders)
 - Queue your music to listen to it
@@ -29,22 +29,21 @@ I don't deny inspiration from [Jamstash](https://github.com/tsquillario/Jamstash
 | Compared to | + | - |
 |-------------|---|---|
 |Jamstash| See specific features below n°1,2,3. Also, more modern technologies | No podcast. For now. |
-|Navidrome| Folder navigation, which is a must have for me | Dunno much about Navidrome |
+|Navidrome| Folder navigation, which is a must for me | Dunno much about Navidrome |
 |Airsonic Advanced| Comparison TBD | Comparison TBD |
 |...|||
 
 
 
 ## 🎶 Existing features and others to come
-This is (up-to-now) a personal project ; update frequency _**will be**_ hectic, hazardous and........ hunpredictable. 
-**Feature and enhancement propositions Pull Requests are always welcome**. 
-_Simply do not expect rapid improvement or fixes, as this is me on my free time, **sometimes**._
-If it suits your needs or if you like it, don't hesitate to share your impressions one way or another :). **Knowing it helps someone is a motivating machine.**
+This is (up-to-now) a personal project ; update frequency _**will be**_ hectic, hazardous and........ hunpredictable.<br>
+**Feature PR and ideas are always welcome**. _Simply do not expect rapid improvement or fixes, as this is me on my free time, **sometimes**._<br>
+If it suits your needs or if you like it, don't hesitate to share your impressions one way or another :). **Knowing it helps someone else is highly motivating (at least to me).**
 ### Existing specific features
 |N°| Feature | Description | Explanation or Example |
 |--|-------- | -------------------- | ------- |
-|1| Gapless playback | no "empty" time between songs | For songs made for this, having a pause in-between is disturbing |
-|2| Path reconstruction | Player automatically finds a specific folder complete path if known one is partial | Useful for "Most-played" or playlists |
+|1| Gapless playback | no "empty" time between songs | Song B begins exactly when song A stops. This allows for a perfect transition, useful to songs made for it |
+|2| Path reconstruction | Player automatically finds a specific folder complete path if known one is partial | In a classic subsonic player, when you click on an album from a "special folder" (ex: Most Played, Recently added...), you don't get _**all**_ the parent-folders. Noiser automatically queries the backend (here gonic) to retrieve the complete path, allowing you to actually "browse" from any point, even from an album you stumbled upon. Works for songs/albums in playlists too |
 |3| Browser Storage | Most of the data is saved for next launch | Queue, current song progress and other things are saved between reboot |
 
 
@@ -53,7 +52,9 @@ There are features I judge essential to do next. No priority order in these for 
 
 | Feature | Motivation & Context |
 |-------- | -------------------- |
-| Dartk theme and automatic adaptation | Will come once UI is stable |
+| HTML Notifications | Jamstash was able to send notification popup to the system through the browser. This is great and has to be done here too. |
+| Fine Selection Tooling | App doesn't allow for precise multi-selection. For now. Mandatory, and probably next to be implemented. |
+| Dark theme and automatic adaptation | Will come once UI is stable |
 | Better Caching System | Replacing the current "chain" of folders by a Set/Map, with a timestamp to decide when to refresh it. Should be way more efficient |
 | Tests | Well... at some point.... yeah... :D |
 | Upgrading to Svelte 5 | New major version came up in october 2024, with the rune-thingy |
@@ -68,6 +69,8 @@ These are features I'm aware of but not sure to implement at this time.
 |-------- | -------------------- |
 | Podcasting | this is possible in subsonic api, this was available in jamstash, but I simply don't use it everyday at this stage |
 | Opening to other protocols | Often, web-music clients only do one protocol (here subsonic). But I see no reason to restrict the client to only one. For example, I could imagine adding webdav next. Or Jellyfin api |
+| Drag'n'drop| While awesome, it **is** a pain to code. I don't feel like this is mandatory if the UI/UX allows you to do the same in simpler ways. This will come after the other features, *it it comes*. |
+| Better Auth System (SSO ?)| Well this [feels like a WIP on subsonic protocols](https://github.com/opensubsonic/open-subsonic-api/discussions/25) and [backends](https://github.com/sentriz/gonic/pull/346). But I'm all for making it work, once one standard has been designed for the subsonic protocol. |
 
 
 
@@ -76,7 +79,13 @@ I always find it interesting showing where we came, and where we are at one poin
 See these few pictures below describing UI/UX iterations and visible features.
 TBD
 
-
+## 🙏 Special thanks
+- To the users, if any
+- To the [Svelte (Kit)](https://svelte.dev/) Team
+- To [HowlerJs](https://howlerjs.com/) Author, library here used for sound playback
+- To the [NucleoApp](https://nucleoapp.com/application) Team allowing me to easily create my own icon font (while not using their icons here, only my own creations)
+- To all other authors that shared their hard work to the community 🫡, and from which I directly or indirectly borrowed help by importing their libraries. (See `package.json`, or the dependency tree)
+- To my girlfriend, for patiently not throwing me out by the window 🤦‍♀️🙇‍♂️🪟
 
 ## 📖 License
 AGPLv3
