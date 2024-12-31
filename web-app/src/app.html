@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Noiser - A dead-simple music-player</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		%sveltekit.head%
+		<style>
+			*{
+
+				--main-color: #FFFFFF;
+				--main-second-color: #fafafa;
+				--main-third-color: #cdd9fc;
+				--main-fourth-color: #c4d0f0;
+				
+				--alternate-color: #282d3a;
+				--alternate-second-color: #7dbcba;
+				--alternate-third-color: #009cf8;
+				
+				--selection-color: #41a8a5;
+				/*--third-color: #f7b385;*/
+				--third-color: var(--alternate-second-color);
+			}
+
+			a{
+				cursor: pointer;
+			}
+
+			html{
+				background-color: var(--main-color);
+			}
+			
+			html, body, body>div{
+				margin: 0;
+				padding: 0;
+			}
+			
+			body{
+				font-family: calibri, verdana;
+				width: 100vw;
+				height: 100vh;
+			}
+			
+			section.globalContainer{
+				all: unset;
+				display: grid;
+				overflow: hidden;
+				width: 100%;
+				height: 100%;
+				align-items: stretch;
+			}
+			
+			h1{
+				margin: 0;
+				padding: 0;
+				position: relative;
+			}
+			
+			h1:after, h1:before{
+				position: absolute;
+				content: 'Noiser';
+			}
+			
+			h1:before{
+				left: 1px;
+				top: 1px;
+				z-index: -50;
+				color: var(--main-third-color);
+			}
+			
+			h1:after{
+				left: 2px;
+				top: 2px;
+				z-index: -55;
+				color: var(--selection-color);
+			}
+			
+			h2{
+				margin: 0;
+				padding: 0;
+				background: var(--alternate-color);
+				color: white;
+				align-self: stretch;
+			}
+			
+			.no-select{
+				user-select: none;
+			}
+			
+			/*************************************************************
+			 * FLEX BOXING
+			 **/
+			.mosaic{
+				display: flex;
+				flex-direction: row;
+				justify-content: flex-start;
+				flex-wrap: wrap;
+			}
+			
+			.sequential{
+				display: flex;
+				flex-direction: column;
+				justify-content: flex-start;
+				flex-wrap: wrap;
+			}
+			
+			.nowrap{
+				flex-wrap: nowrap;
+			}
+			
+			.spacedAround{
+				justify-content: space-around;
+			}
+			
+			.spacedBetween{
+				justify-content: space-between;
+			}
+			
+			.centered{
+				justify-content: center;
+			}
+			
+			.stretched > *{
+				flex-grow: 1;
+			}
+			
+			.alignItemsStart{
+				align-items: flex-start;
+			}
+			
+			.alignItemsCenter{
+				align-items: center;
+			}
+			
+			.alignItemsStretch{
+				align-items: stretch;
+			}
+			
+			.alignItemsStretch > *{
+				align-self: stretch;
+			}
+			
+			.gap10{
+				gap: 10px;
+			}
+			
+			.gap5{
+				gap: 5px;
+			}
+			
+			/*************************************************************
+			 * BUTTONS
+			 **/
+			
+			.clickable{
+				cursor: pointer;
+			}
+			
+			button.textBtn, a.textBtn{
+				transition: background .3s, color .3s;
+				padding: 4px 5px;
+				border-radius: 3px;
+				border: none;
+				text-decoration: none;
+				color: var(--alternate-color);
+			}
+			
+			button.textBtn:not(.selected):not(.disabled),
+			a.textBtn:not(.selected):not(.disabled){
+				cursor: pointer;
+			}
+			
+			button.textBtn i+*,
+			a.textBtn i+*{
+				margin-left: 5px;
+			}
+			
+			button.textBtn:not(.selected):not(.disabled):hover,
+			a.textBtn:not(.selected):not(.disabled):hover{
+				background: var(--main-third-color);
+			}
+			
+			.grouped button.textBtn,
+			.grouped a.textBtn{
+				border-radius: 0;
+			}
+			
+			.grouped button.textBtn:first-child,
+			.grouped a.textBtn:first-child{
+				border-top-left-radius: 3px;
+				border-bottom-left-radius: 3px;
+			}
+			
+			.grouped button.textBtn:last-child,
+			.grouped a.textBtn:last-child{
+				border-top-right-radius: 3px;
+				border-bottom-right-radius: 3px;
+			}
+			
+			.selected.textBtn{
+				background: var(--selection-color);
+				color: var(--main-color);
+			}
+			
+			.alternate.textBtn{
+				
+			}
+			
+			i.rotate90{
+				transform: rotate(90deg);
+			}
+			
+			/*************************************************************
+			 * EFFECTS
+			 **/
+			@keyframes right-out {
+			  from {
+				transform: translateX(0%);
+			  }
+
+			  to {
+				transform: translateX(100%);
+			  }
+			}
+
+			@keyframes right-in {
+			  from {
+				transform: translateX(-100%);
+			  }
+
+			  to {
+				transform: translateY(0%);
+			  }
+			}		 
+
+			@keyframes left-out {
+			  from {
+				transform: translateX(0%);
+			  }
+
+			  to {
+				transform: translateX(-100%);
+			  }
+			}
+
+			@keyframes left-in {
+			  from {
+				transform: translateX(100%);
+			  }
+
+			  to {
+				transform: translateX(0%);
+			  }
+			}
+		</style>
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

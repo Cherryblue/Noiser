@@ -1,0 +1,74 @@
+aside.controlPanel{
+	background: var(--alternate-color);
+	color: var(--main-color);
+	grid-column: browser / span 1;
+	grid-row: mainRow / span 2;
+	overflow: hidden;
+}
+
+nav.controlPanel{
+	background: var(--alternate-color);
+	color: var(--main-color);
+	grid-column: browser / span 1;
+	grid-row: subNav / span 1;
+	padding-top: 5px;
+	font-weight: 600;
+	padding: 0 15px;
+	
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+nav.controlPanel > div{
+	/* background: linear-gradient(var(--selection-color),var(--alternate-second-color)); */
+	/*background: var(--main-fourth-color);*/
+	background: var(--third-color);
+	color: var(--alternate-color);
+	/*color: var(--main-color);*/
+	border-radius: 5px;
+	padding: 5px;
+	text-align: center;
+	cursor: default;
+}
+
+aside.controlPanel ul{
+	margin: 0; 
+	padding: 0;
+}
+
+aside.controlPanel ul li{
+	list-style-type: none;
+	transition: background 0.3s, color 0.3s;
+	margin: 0 15px;
+	position: relative;
+	color: var(--main-color);
+	border-radius: 3px;
+}
+	
+aside.controlPanel ul li a{
+	display: block;
+	padding: 6px;
+}
+	
+aside.controlPanel ul li.selected, ul li.selected:hover{
+	background: var(--selection-color) !important;
+	color: var(--main-color);
+}
+	
+aside.controlPanel ul li.selected:after{
+	border-right-color: var(--main-second-color);
+}
+
+aside.controlPanel ul.topLevel{
+	overflow-y: auto;
+	flex-grow: 1;
+}
+
+aside.controlPanel ul li:not(.selected):hover{
+	background: var(--main-second-color);
+	color: var(--alternate-color);
+}
+
+aside.controlPanel ul li.selected a{
+	cursor: default;
+}

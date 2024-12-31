@@ -1,0 +1,129 @@
+/*--------------------------------
+
+Noiser icon font
+Generated using nucleoapp.com
+
+-------------------------------- */
+
+$noiser-font-path: "../fonts" !default;
+
+@font-face {
+  font-family: 'Noiser';
+  src: url('#{$noiser-font-path}/Noiser.eot');
+  src: url('#{$noiser-font-path}/Noiser.eot') format('embedded-opentype'),
+       url('#{$noiser-font-path}/Noiser.woff2') format('woff2'),
+       url('#{$noiser-font-path}/Noiser.woff') format('woff'),
+       url('#{$noiser-font-path}/Noiser.ttf') format('truetype'),
+       url('#{$noiser-font-path}/Noiser.svg') format('svg');
+}
+
+/* base class */
+.icon {
+  display: inline-block;
+  font: normal normal normal 1em/1 'Noiser';
+  color: inherit;
+  flex-shrink: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* size examples - relative units */
+.icon-sm {
+  font-size: 0.8em;
+}
+
+.icon-lg {
+  font-size: 1.2em;
+}
+
+/* size examples - absolute units */
+.icon-16 {
+  font-size: 16px;
+}
+
+.icon-32 {
+  font-size: 32px;
+}
+
+/* rotate the icon infinitely */
+.icon-is-spinning {
+  animation: icon-spin 1s infinite linear;
+}
+
+@keyframes icon-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* transform */
+.icon-rotate-90  {
+	transform: rotate(90deg);
+}
+
+.icon-rotate-180 {
+	transform: rotate(180deg);
+}
+
+.icon-rotate-270 {
+	transform: rotate(270deg);
+}
+
+.icon-flip-y {
+	transform: scaleY(-1);
+}
+
+.icon-flip-x {
+	transform: scaleX(-1);
+}
+
+/* icons */
+$icons: (
+  'cross': 'ea02',
+  'info': 'ea03',
+  'left': 'ea04',
+  'loop': 'ea06',
+  'no-loop': 'ea07',
+  'pause-circle': 'ea08',
+  'play-circle': 'ea09',
+  'refresh': 'ea0a',
+  'forward': 'ea0b',
+  'remove': 'ea0c',
+  'right': 'ea0d',
+  'save': 'ea0e',
+  'search': 'ea0f',
+  'settings': 'ea10',
+  'shuffle': 'ea11',
+  'speaker-muted': 'ea12',
+  'speaker': 'ea13',
+  'star': 'ea14',
+  'stop': 'ea15',
+  'trash': 'ea16',
+  'add': 'ea17',
+  'archive': 'ea18',
+  'check': 'ea19',
+  'cloud': 'ea1a',
+  'headset': 'ea1b',
+  'download': 'ea1c',
+  'reload': 'ea1d',
+  'previous': 'ea1e',
+  'next': 'ea1f',
+  'play': 'ea20',
+  'user': 'ea22',
+  'no-user': 'ea23',
+  'stop-sign': 'ea24',
+  'loop-one': 'ea25',
+);
+
+@function unicode($str) {
+  @return unquote("\"\\#{$str}\"");
+}
+
+@each $name, $code in $icons {
+  .noiser-#{""+$name}::before {
+    content: unicode($code);
+  }
+}
