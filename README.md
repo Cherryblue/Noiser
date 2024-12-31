@@ -43,7 +43,7 @@ If it suits your needs or if you like it, don't hesitate to share your impressio
 |1| Gapless playback | no "empty" time between songs | Song B begins exactly when song A stops. This allows for a perfect transition, useful to songs made for it |
 |2| Path reconstruction | Player automatically finds a specific folder complete path if known one is partial | In a classic subsonic player, when you click on an album from a "special folder" (ex: Most Played, Recently added...), you don't get _**all**_ the parent-folders. Noiser automatically queries the backend (here gonic) to retrieve the complete path, allowing you to actually "browse" from any point, even from an album you stumbled upon. Works for songs/albums in playlists too |
 |3| Browser Storage | Most of the data is saved for next launch | Queue, current song progress and other things are saved between reboot |
-|4| Search categories | When searching, you choose if you search for a song, an artist, an album, or anything | This allows for more specific search |
+|4| Search categories | When searching, you choose if you search for a song, an album, or anything | This allows for more specific search |
 
 ### Other features
 |N°| Feature | Description | Explanation or Example |
@@ -76,11 +76,6 @@ These are features I'm aware of but not sure to implement at this time.
 | Drag'n'drop| While awesome, it **is** a pain to code. I don't feel like this is mandatory if the UI/UX allows you to do the same in simpler ways. This will come after the other features, *it it comes*. |
 | Better Auth System (SSO ?)| Well this [feels like a WIP on subsonic protocols](https://github.com/opensubsonic/open-subsonic-api/discussions/25) and [backends](https://github.com/sentriz/gonic/pull/346). But I'm all for making it work, once one standard has been designed for the subsonic protocol. |
 
-## 📈 Evolution / Development Historic
-I always find it interesting showing where we came, and where we are at one point in time.
-See these few pictures below describing UI/UX iterations and visible features.
-TBD
-
 ## 🙏 Special thanks
 - To the users, if any
 - To the [Svelte (Kit)](https://svelte.dev/) Team
@@ -95,4 +90,5 @@ AGPLv3
 
 [//]: #
    [svelte]: <https://svelte.dev>
-   [howler-js]: <https://howlerjs.com/>
+   [howler-js]: <https://howlerjs.com>
+   [crypto-js]: <https://www.npmjs.com/package/crypto-js>

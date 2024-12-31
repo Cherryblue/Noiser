@@ -1,4 +1,4 @@
-# 📣Noiser Lifetime Pictures Album
+# 📣Noiser Lifetime Pictures Album 📈
 
 ## 🌱Idea🌳
 From an IT perspective, Music player is a very old use-case. It has been remade times and times again, with different thinking each time.
