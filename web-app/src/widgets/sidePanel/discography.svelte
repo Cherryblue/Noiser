@@ -1,6 +1,7 @@
 <script>
 	import { slide } from 'svelte/transition';
 	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
 	
 	import * as load from "$services/subsonic-album-api.js";
 	import { currentDirectory, isConnected } from "$stores/global.js";
@@ -47,7 +48,7 @@
 	{/if}
 </nav>
 
-<aside class="controlPanel sequential nowrap">
+<aside class="controlPanel sequential nowrap" on:click={() => { if(browser) goto('/player/browse', true); }}>
 	<ul class=autoAlbums>
 		<!-- For any discography, we can serve special album lists -->
 		<li class:selected = {$currentDirectory[0]?.isDynamicFolder && $currentDirectory[0]?.folder === 'random'}>

@@ -1,18 +1,26 @@
 <script>
 	import { onMount } from 'svelte';
+	import DefaultCover from "$widgets/DefaultCover.svelte";
+	
 	import { currentDirectory, selection } from "$stores/global.js";
 	import { addToQueue, replaceQueueWith } from '$stores/queue.js';
 	import { currentPlaylist, addToPlaylist } from '$stores/playlist.js';
+	
 	import { removeCircularCall } from "$services/subsonicToValueObject.js";
 	import * as load from "$services/subsonic-album-api.js";
 	import * as sorter from "$services/sorter.js";
+	
+	import ImageLoader from '$widgets/lazy-load/ImageLoader.svelte';
+	
 	let items = [], 
 		currentDir = null, 
 		folders = [], 
 		songs = [], 
 		folderSortStrategy,
 		songSortStrategy,
-		initialized = false;
+		initialized = false,
+		folderCoverFallback = false,
+		folderCover;
 	
 	onMount(() => {
 		folderSortStrategy = localStorage?.getItem("viewer:folderSortStrategy") || 'az';
@@ -20,6 +28,11 @@
 		applyStrategy('song', songSortStrategy);
 		applyStrategy('folder', folderSortStrategy);
 		setTimeout(function() { initialized = true },50);
+				
+		if(folderCover)
+			folderCover.onerror= () => {
+				folderCoverFallback = true
+			};
 	});
 	
 	$: saveStrategy('folder', folderSortStrategy);
@@ -185,6 +198,11 @@
 		if($selection == null || $selection.from != 'folder')
 			$selection = { from: 'folder', positions: [], songs: [] };
 	}
+	
+	function setDefaultImg(){
+		console.log(this);
+//		this.src=defaultImg;
+	}
 </script>
 
 <nav id=path>
@@ -200,7 +218,11 @@
 <section class="sequential nowrap">
 	{#if currentDir && !currentDir.isDynamicFolder}
 		<div class="folderCover mosaic">
-			<img src={currentDir?.coverURL} alt="No Cover" style="--folderImg : {currentDir?.coverURL||''}" />
+			{#if currentDir?.coverURL == "" || folderCoverFallback}
+				<DefaultCover color="var(--main-color)" bg="var(--alternate-color)" size='155' />
+			{:else}
+				<img src={currentDir?.coverURL} bind:this={folderCover} />
+			{/if}
 			<legend class="sequential alignItemsStart">
 				<h3 on:click={() => { songs.forEach(s => enrichSong(s)); $replaceQueueWith = songs; }}>{currentDir.interpretedTitle}</h3>
 				<span>{currentDir?.parent?.interpretedTitle}</span>
@@ -261,7 +283,8 @@
 	<div class="mosaic items">
 	{#each folders as f}
 		<article class="album sequential" on:click={ () => {$currentDirectory = $currentDirectory.concat(removeCircularCall(f))} } >
-			<img src={f.coverURL} alt="No Cover" />
+			<div class=img><ImageLoader src={f.coverURL} alt=""></ImageLoader></div>
+			<!--<img loading="lazy" src={f.coverURL} alt="" on:error={setDefaultImg} />-->
 			<span>{f.interpretedTitle}</span>
 		</article>
 	{/each}
@@ -475,9 +498,12 @@
 		background: var(--main-third-color);
 	}
 	
-	article.album img{
+	article.album .img, article.album img{
+		margin: 0;
+		padding: 0;
 		width: 155px;
 		height: 155px;
+		overflow: hidden;
 	}
 	
 	article.album:before{
@@ -548,26 +574,25 @@
 		width: calc(100% - 30px);
 	}
 	
-	.folderCover img{
+	.folderCover img,
+	.folderCover div.img{
 		width: 155px;
 		height: 155px;
+	}
+	
+	.folderCover div.img{
 		position: relative;
+		background: var(--alternate-color);
+		color: var(--main-color);	
 	}
 	
-	.folderCover img:after{
-		content: '';
-		display: inline-block;
-		/*background-image: src(var(--folderImg));
-		background-repeat: no-repeat;
+	.folderCover div.img i{
 		position: absolute;
-		z-index: -50;
-		filter: blur(20px);
-		width: 500px;
-		height: 500px;*/
-		right:0;
-		top: 0;
-	}
-	
+		left: 50%;
+		top: 50%;
+		font-size: 100px;
+		transform: translate(-50%,-50%);
+	}	
 	
 	.folderCover legend{
 		padding: 0;

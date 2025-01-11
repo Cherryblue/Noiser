@@ -82,7 +82,7 @@
 	form{
 		position: relative;
 		padding: 5px;
-		grid-column: mainColumn2 / span 1;
+		grid-column: mainColumn3 / span 1;
 		grid-row: title / span 1;
 		background: var(--main-second-color);
 	}
