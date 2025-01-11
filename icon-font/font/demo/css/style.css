@@ -315,3 +315,7 @@ icons
   content: "\ea25";
 }
 
+.noiser-song-note::before {
+  content: "\ea26";
+}
+
