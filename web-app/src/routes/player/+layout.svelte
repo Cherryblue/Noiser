@@ -116,7 +116,7 @@
 	}
 
 	section.globalContainer{
-		grid-template-columns: [player] max(25vw, 500px) [browser] max(15vw, 300px) [mainColumn] 20vw [mainColumn2] 20vw [mainColumn3] 20vw;
+		grid-template-columns: [player] max(25vw, 500px) [browser] max(15vw, 300px) [mainColumn] auto [mainColumn2] auto [mainColumn3] auto;
 		grid-template-rows: [title] 40px [mainNav] 60px [subNav] 30px [mainRow] auto [footer] 25px;
 	}
 	
