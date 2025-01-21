@@ -280,15 +280,7 @@
 		{/if}
 	</nav>
 	
-	<div class="mosaic items">
-	{#each folders as f}
-		<article class="album sequential" on:click={ () => {$currentDirectory = $currentDirectory.concat(removeCircularCall(f))} } >
-			<div class=img><ImageLoader src={f.coverURL} alt=""></ImageLoader></div>
-			<!--<img loading="lazy" src={f.coverURL} alt="" on:error={setDefaultImg} />-->
-			<span>{f.interpretedTitle}</span>
-		</article>
-	{/each}
-	
+	<div class="mosaic items">	
 	{#if songs.length > 0}
 		<table class="songs selectableContent">
 			<tr>
@@ -341,6 +333,13 @@
 		{/each}
 		</table>
 	{/if}
+	{#each folders as f}
+		<article class="album sequential" on:click={ () => {$currentDirectory = $currentDirectory.concat(removeCircularCall(f))} } >
+			<div class=img><ImageLoader src={f.coverURL} alt=""></ImageLoader></div>
+			<!--<img loading="lazy" src={f.coverURL} alt="" on:error={setDefaultImg} />-->
+			<span>{f.interpretedTitle}</span>
+		</article>
+	{/each}
 	</div>
 </section>
 
