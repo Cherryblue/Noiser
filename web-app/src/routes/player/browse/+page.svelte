@@ -292,34 +292,26 @@
 	{#if songs.length > 0}
 		<table class="songs selectableContent">
 			<tr>
-			{#if currentDir.folders?.length > 0}
-				<th>Track</th>
-				<th>Song Name</th>
-			{:else}
-				<th>Song Name</th>
-				<th>Artists</th>
-				<th>Year</th>
-			{/if}
-				<th class:selected={$selection?.from == 'folder' && $selection?.positions?.length == songs.length} on:click={() => {
+				<th class=selector class:selected={$selection?.from == 'folder' && $selection?.positions?.length == songs.length} on:click={() => {
 					setupSelectionIfNeedBe();
 					if($selection?.positions?.length == songs.length)
 						$selection = { from: null, positions: [], songs: [] };
 					else
 						selection.set({from: 'folder', positions : [...Array(songs.length).keys()], songs : songs.map(el => enrichSong(el)) });
 				}}/>
+				{#if currentDir.folders?.length > 0}
+					<th>Track</th>
+					<th>Song Name</th>
+				{:else}
+					<th>Song Name</th>
+					<th>Artists</th>
+					<th>Year</th>
+				{/if}
 			</tr>
 			
 		{#each songs as s, i}
 			<tr>
-				{#if currentDir.folders?.length > 0}
-				<td>{s.tags.track}</td>
-				<td on:click={() => { enrichSong(s); $addToQueue = [s]; }}>{s.interpretedTitle}</td>
-				{:else}
-				<td on:click={() => { enrichSong(s); $addToQueue = [s]; }}>{s.interpretedTitle}</td>
-				<td>{s.tags.artist}</td>
-				<td>{s.interpretedYear}</td>
-				{/if}
-				<td class="mosaic spacedAround" class:selected={$selection.from == 'folder' && $selection.positions.includes(i)} on:click={() => {
+				<td class="mosaic spacedAround selector" class:selected={$selection.from == 'folder' && $selection.positions.includes(i)} on:click={() => {
 					setupSelectionIfNeedBe();
 					if($selection.positions.includes(i)){
 						$selection.positions = $selection.positions.filter(el => el != i);
@@ -336,6 +328,14 @@
 					// Refreshing
 					$selection = $selection;
 				}} />
+				{#if currentDir.folders?.length > 0}
+					<td>{s.tags.track}</td>
+					<td on:click={() => { enrichSong(s); $addToQueue = [s]; }}>{s.interpretedTitle}</td>
+				{:else}
+					<td on:click={() => { enrichSong(s); $addToQueue = [s]; }}>{s.interpretedTitle}</td>
+					<td>{s.tags.artist}</td>
+					<td>{s.interpretedYear}</td>
+				{/if}
 			</tr>
 			
 		{/each}
@@ -357,8 +357,13 @@
 </footer>
 
 <style>
-	@import '$widgets/selectableContent.css';
-
+	/* 	These import overflow over Svelte "containers". 
+		So we could import them only once, and they still would work for the other containers, but this would hide us the dependencies.
+		Thus here they are, but it could still work if you removed them (...probably :)) */
+	@import '$widgets/commonStyling/selectableContent.css';
+	@import '$widgets/commonStyling/folders.css';
+	@import '$widgets/commonStyling/songs.css';
+	
 	nav#path{
 		grid-column: mainColumn / span 3;
 		grid-row: mainNav / span 1;
@@ -453,12 +458,14 @@
 	
 	nav#sortCriteria span.emptySpace{
 		flex: 1;
+		flex-shrink: 1;
 	}
 	
 	nav#sortCriteria ul{
 		margin: 0; padding: 0;
 		overflow: hidden;
-		flex-shrink: 1;
+		flex-shrink: 0;
+		flex-grow: 0;
 	}
 	
 	nav#sortCriteria ul li{
@@ -483,66 +490,6 @@
 	
 	section .items{
 		overflow-y: auto;
-	}
-	
-	article.album{
-		position: relative;
-		transition: background 0.3s;
-		width: 157px;
-		min-height: 175px;
-		padding: 5px 10px;
-		cursor: pointer;
-	}
-	
-	article.album:hover{
-		background: var(--main-third-color);
-	}
-	
-	article.album .img, article.album img{
-		margin: 0;
-		padding: 0;
-		width: 155px;
-		height: 155px;
-		overflow: hidden;
-	}
-	
-	article.album:before{
-		position: absolute;
-		content: '';
-		width: 150px;
-		height: 150px;
-		left: 15px;
-		top: 10px;
-		
-		border-bottom: 3px solid var(--main-third-color);
-		border-right: 3px solid var(--main-third-color);
-	}
-	
-	table.songs{
-		width: calc(100% - 10px);
-		padding: 5px;
-	}
-	
-	table.songs tr:nth-child(even){
-		background: var(--main-color);
-	}
-	
-	table.songs th, table.songs td{
-		height: 20px;
-		padding: 4px;
-	}
-	
-	table.songs th:not(:last-child){
-		cursor: default;
-		text-align: left;
-	}
-	
-	table.songs td:first-child{
-		cursor: pointer;
-	}
-	
-	article.song span{
-		user-select: none;
 	}
 	
 	footer{
@@ -605,7 +552,7 @@
 		position: relative;
 	}
 	
-	.folderCover h3:hover, table.songs td:first-child:hover{
+	.folderCover h3:hover{
 		text-decoration: underline;
 	}
 	

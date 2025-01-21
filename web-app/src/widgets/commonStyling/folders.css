@@ -1,0 +1,32 @@
+article.album{
+	position: relative;
+	transition: background 0.3s;
+	width: 157px;
+	min-height: 175px;
+	padding: 5px 10px;
+	cursor: pointer;
+}
+
+article.album:hover{
+	background: var(--main-third-color);
+}
+
+article.album .img, article.album img{
+	margin: 0;
+	padding: 0;
+	width: 155px;
+	height: 155px;
+	overflow: hidden;
+}
+
+article.album:before{
+	position: absolute;
+	content: '';
+	width: 150px;
+	height: 150px;
+	left: 15px;
+	top: 10px;
+	
+	border-bottom: 3px solid var(--main-third-color);
+	border-right: 3px solid var(--main-third-color);
+}

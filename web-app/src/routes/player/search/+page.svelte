@@ -148,29 +148,22 @@
 	{#if $searchResults.songs.length > 0}
 		<table class="songs selectableContent">
 			<tr>
-				<th>Song Name</th>
-				<th>Artists</th>
-				<th>Album</th>
-				<th>Year</th>
-				<th class:selected={$selection?.from == 'folder' && $selection?.positions?.length == $searchResults.songs.length} on:click={() => {
+				<th class=selector class:selected={$selection?.from == 'folder' && $selection?.positions?.length == $searchResults.songs.length} on:click={() => {
 					setupSelectionIfNeedBe();
 					if($selection?.positions?.length == $searchResults.songs.length)
 						$selection = { from: null, positions: [], songs: [] };
 					else
 						selection.set({from: 'folder', positions : [...Array($searchResults.songs.length).keys()], songs : $searchResults.songs });
 				}}/>
+				<th>Song Name</th>
+				<th>Artists</th>
+				<th>Album</th>
+				<th>Year</th>
 			</tr>
 			
 		{#each $searchResults.songs as s, i}
 			<tr>
-				<td on:click={() => { $addToQueue = [s]; }}>{s.interpretedTitle}</td>
-				<td>{s.tags.artist}</td>
-				<td on:click={() => {
-					$currentDirectory = $currentDirectory = [{ interpretedTitle : s.interpretedAlbum, interpretedYear: s.interpretedYear, id: s.parent.id, pathIncomplete : true }];
-					goto('/player/browse', true);
-				}}>{s.interpretedAlbum}</td>
-				<td>{s.interpretedYear}</td>
-				<td class="mosaic spacedAround" class:selected={$selection.from == 'folder' && $selection.positions.includes(i)} on:click={() => {
+				<td class="mosaic spacedAround selector" class:selected={$selection.from == 'folder' && $selection.positions.includes(i)} on:click={() => {
 					setupSelectionIfNeedBe();
 					if($selection.positions.includes(i)){
 						$selection.positions = $selection.positions.filter(el => el != i);
@@ -187,6 +180,13 @@
 					// Refreshing
 					$selection = $selection;
 				}} />
+				<td on:click|preventDefault={() => { $addToQueue = [s]; }}>{s.interpretedTitle}</td>
+				<td>{s.tags.artist}</td>
+				<td on:click={() => {
+					$currentDirectory = $currentDirectory = [{ interpretedTitle : s.interpretedAlbum, interpretedYear: s.interpretedYear, id: s.parent.id, pathIncomplete : true }];
+					goto('/player/browse', true);
+				}}>{s.interpretedAlbum}</td>
+				<td>{s.interpretedYear}</td>
 			</tr>
 			
 		{/each}
@@ -200,7 +200,12 @@
 </footer>
 
 <style>
-	@import '$widgets/selectableContent.css';
+	/* 	These import overflow over Svelte "containers". 
+		So we could import them only once, and they still would work for the other containers, but this would hide us the dependencies.
+		Thus here they are, but it could still work if you removed them (...probably :)) */
+	@import '$widgets/commonStyling/selectableContent.css';
+	@import '$widgets/commonStyling/folders.css';
+	@import '$widgets/commonStyling/songs.css';
 
 	nav#path{
 		grid-column: mainColumn / span 3;
@@ -328,63 +333,6 @@
 		overflow-y: auto;
 	}
 	
-	article.album{
-		position: relative;
-		transition: background 0.3s;
-		width: 157px;
-		min-height: 175px;
-		padding: 5px 10px;
-		cursor: pointer;
-	}
-	
-	article.album:hover{
-		background: var(--main-third-color);
-	}
-	
-	article.album img{
-		width: 155px;
-		height: 155px;
-	}
-	
-	article.album:before{
-		position: absolute;
-		content: '';
-		width: 150px;
-		height: 150px;
-		left: 15px;
-		top: 10px;
-		
-		border-bottom: 3px solid var(--main-third-color);
-		border-right: 3px solid var(--main-third-color);
-	}
-	
-	table.songs{
-		width: calc(100% - 10px);
-		padding: 5px;
-	}
-	
-	table.songs tr:nth-child(even){
-		background: var(--main-color);
-	}
-	
-	table.songs th, table.songs td{
-		height: 20px;
-		padding: 4px;
-	}
-	
-	table.songs th:not(:last-child){
-		cursor: default;
-		text-align: left;
-	}
-	
-	table.songs td:first-child, table.songs td:nth-child(3){
-		cursor: pointer;
-	}
-	
-	article.song span{
-		user-select: none;
-	}
-	
 	footer{
 		background: var(--alternate-color);
 		color: var(--main-color);
@@ -446,9 +394,7 @@
 		position: relative;
 	}
 	
-	.folderCover h3:hover,
-	table.songs td:first-child:hover,
-	table.songs td:nth-child(3):hover{
+	.folderCover h3:hover{
 		text-decoration: underline;
 	}
 	

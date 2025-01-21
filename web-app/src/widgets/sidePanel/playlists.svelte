@@ -252,7 +252,7 @@
 			<table class=selectableContent>
 				<tr>
 					<th>{$currentPlaylist.songs.length} songs</th>
-					<th class:selected={$selection.from == 'playlist' && $selection?.positions.length == $currentPlaylist?.songs?.length} on:click={() => {
+					<th class=selector class:selected={$selection.from == 'playlist' && $selection?.positions.length == $currentPlaylist?.songs?.length} on:click={() => {
 						setupSelectionIfNeedBe();
 						if($selection?.positions?.length == $currentPlaylist?.songs?.length)
 							$selection = { from: null, positions: [], songs: [] };
@@ -265,7 +265,7 @@
 					<td><a on:click={() => { 
 						$addToQueue = [s];
 					}}>{s.interpretedTitle}</a></td>
-					<td class="mosaic spacedAround" class:selected={$selection.from == 'playlist' && $selection.positions.includes(i)} on:click={() => {
+					<td class="mosaic spacedAround selector" class:selected={$selection.from == 'playlist' && $selection.positions.includes(i)} on:click={() => {
 						setupSelectionIfNeedBe();
 						if($selection.positions.includes(i)){
 							$selection.positions = $selection.positions.filter(el => el != i);
@@ -291,7 +291,7 @@
 
 <style>
 	@import './controlPanel.css';
-	@import '../selectableContent.css';
+	@import '../commonStyling/selectableContent.css';
 	
 	div.topLevel{
 		margin-top: 1px;

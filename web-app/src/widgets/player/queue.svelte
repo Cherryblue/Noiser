@@ -185,7 +185,7 @@
 			{#if queue.some(s => s.fromPlaylist == true)}
 			<th>Playlist</th>
 			{/if}
-			<th class:selected={$selection.from == 'queue' && $selection.positions.length == queue.length} on:click={() => {
+			<th class=selector class:selected={$selection.from == 'queue' && $selection.positions.length == queue.length} on:click={() => {
 				setupSelectionIfNeedBe();
 				if($selection?.positions?.length == queue.length)
 					$selection = { from: null, positions: [], songs: [] };
@@ -219,7 +219,7 @@
 					<td />
 				{/if}
 			{/if}
-			<td class="mosaic spacedAround" class:selected={$selection.from == 'queue' && $selection.positions.includes(i)} on:click={() => {
+			<td class="mosaic spacedAround selector" class:selected={$selection.from == 'queue' && $selection.positions.includes(i)} on:click={() => {
 				setupSelectionIfNeedBe();
 				if($selection.positions.includes(i)){
 					$selection.positions = $selection.positions.filter(el => el != i);
@@ -260,7 +260,7 @@
 </footer>
 
 <style>
-	@import '../selectableContent.css';
+	@import '../commonStyling/selectableContent.css';
 
 	aside{
 		position: relative;

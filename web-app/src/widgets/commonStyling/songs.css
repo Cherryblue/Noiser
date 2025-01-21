@@ -1,0 +1,26 @@
+table.songs{
+	width: calc(100% - 10px);
+	padding: 5px;
+}
+
+table.songs tr:nth-child(even){
+	background: var(--main-color);
+}
+
+table.songs th, table.songs td{
+	height: 20px;
+	padding: 4px;
+}
+
+table.songs th:not(.selector){
+	cursor: default;
+	text-align: left;
+}
+
+table.songs td:nth-child(2){
+	cursor: pointer;
+}
+
+table.songs td:nth-child(2):hover{
+	text-decoration: underline;
+}
