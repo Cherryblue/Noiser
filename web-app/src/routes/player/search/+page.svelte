@@ -49,55 +49,10 @@
 	}
 	
 	function applyStrategy(subject, strategy){
-		if(subject == 'song'){
-			switch(strategy){
-				case "az":
-					$searchResults.songs.sort(sorter.sortByName);
-					break;
-
-				case "za":
-					$searchResults.songs.sort(sorter.sortByNameReverse);
-					break;
-					
-				case "date":
-					$searchResults.songs.sort(sorter.sortByYear);
-					break;
-					
-				case "dateReversed":
-					$searchResults.songs.sort(sorter.sortByYearReverse);
-					break;
-					
-				case "track":
-					$searchResults.songs.sort(sorter.sortByTrackNb);
-					break;
-					
-				case "trackReversed":
-					$searchResults.songs.sort(sorter.sortByTrackNbReverse);
-					break;
-				default: console.error('Should never happen');
-			}
-		}
-			
-		else if(subject == "folder"){
-			switch(strategy){
-				case "az":
-					$searchResults.albums.sort(sorter.sortByName);
-					break;
-					
-				case "za":
-					$searchResults.albums.sort(sorter.sortByNameReverse);
-					break;
-					
-				case "date":
-					$searchResults.albums.sort(sorter.sortByYear);
-					break;
-					
-				case "dateReversed":
-					$searchResults.albums.sort(sorter.sortByYearReverse);
-					break;
-				default: console.error('Should never happen');
-			}
-		}
+		if(subject == 'song')
+			$searchResults.songs.sort(sorter.convert[strategy]);
+		else if(subject == "folder")
+			$searchResults.albums.sort(sorter.convert[strategy]);
 		
 		$searchResults = $searchResults;
 	}

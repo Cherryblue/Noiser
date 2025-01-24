@@ -68,4 +68,13 @@ function sortByTrackNbReverse(a,b){
 	return 0;
 }
 
-export { sortDirectoriesFirst, sortByName, sortByNameReverse, sortByYear, sortByYearReverse, sortByTrackNb, sortByTrackNbReverse }
+const convert = {
+	"az"            : sortByName,
+	"za"            : sortByNameReverse,
+	"date"          : sortByYear,
+	"dateReversed"  : sortByYearReverse,
+	"track"         : sortByTrackNb,
+	"trackReversed" : sortByTrackNbReverse
+};
+
+export { sortDirectoriesFirst, sortByName, sortByNameReverse, sortByYear, sortByYearReverse, sortByTrackNb, sortByTrackNbReverse, convert }

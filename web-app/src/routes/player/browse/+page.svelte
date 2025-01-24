@@ -56,54 +56,12 @@
 	
 	function applyStrategy(subject, strategy){
 		if(subject == 'song'){
-			switch(strategy){
-				case "az":
-					songs.sort(sorter.sortByName);
-					break;
-
-				case "za":
-					songs.sort(sorter.sortByNameReverse);
-					break;
-					
-				case "date":
-					songs.sort(sorter.sortByYear);
-					break;
-					
-				case "dateReversed":
-					songs.sort(sorter.sortByYearReverse);
-					break;
-					
-				case "track":
-					songs.sort(sorter.sortByTrackNb);
-					break;
-					
-				case "trackReversed":
-					songs.sort(sorter.sortByTrackNbReverse);
-					break;
-				default: console.error('Should never happen');
-			}
+			songs.sort(sorter.convert[strategy]);
 			songs = songs;
 		}
 			
 		else if(subject == "folder"){
-			switch(strategy){
-				case "az":
-					folders.sort(sorter.sortByName);
-					break;
-					
-				case "za":
-					folders.sort(sorter.sortByNameReverse);
-					break;
-					
-				case "date":
-					folders.sort(sorter.sortByYear);
-					break;
-					
-				case "dateReversed":
-					folders.sort(sorter.sortByYearReverse);
-					break;
-				default: console.error('Should never happen');
-			}
+			folders.sort(sorter.convert[strategy]);
 			folders = folders;
 		}
 	}
