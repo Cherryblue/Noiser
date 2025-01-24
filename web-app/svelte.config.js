@@ -9,6 +9,7 @@ const config = {
 			$widgets: path.resolve('./src/widgets'),
 			$services: path.resolve('./src/services'),
 			$stores: path.resolve('./src/stores'),
+			$utils: path.resolve('./src/utils')
 		},
 		// adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
 		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.

@@ -5,7 +5,6 @@
 	
 	import * as load from "$services/subsonic-album-api.js";
 	import { currentDirectory, isConnected } from "$stores/global.js";
-	import { removeCircularCall } from "$services/subsonicToValueObject.js";
 	import { currentPlaylist } from '$stores/playlist.js';
 	
 	let currentDiscography; // Bound to Select on View
@@ -24,14 +23,18 @@
 							discographies = discographies // Trigger view update
 						});
 						
-					if($currentDirectory.length == 0){
+					if($currentDirectory == null){
 						const tmp = JSON.parse(localStorage.getItem('settings:startupFolder')) || 'random';
-						$currentDirectory = [{interpretedTitle: '', isDynamicFolder: true, folder: tmp}]
+						$currentDirectory = {id: tmp, isDynamicFolder: true};
 					}
 				}
 			}).catch((e) => { console.error('Could not load top level folders') });
 		}
 	});
+	
+	function askForDynamicFolder(key){
+		$currentDirectory = {id: key, isDynamicFolder: true};
+	}
 </script>
 
 <nav id=currentMusicPath class=controlPanel>
@@ -51,23 +54,23 @@
 <aside class="controlPanel sequential nowrap" on:click={() => { if(browser) goto('/player/browse', true); }}>
 	<ul class=autoAlbums>
 		<!-- For any discography, we can serve special album lists -->
-		<li class:selected = {$currentDirectory[0]?.isDynamicFolder && $currentDirectory[0]?.folder === 'random'}>
-			<a on:click={() => { $currentDirectory = [{interpretedTitle: 'Random', isDynamicFolder: true, folder: 'random'}]  }}>Random</a></li>
-		<li	class:selected = {$currentDirectory[0]?.isDynamicFolder && $currentDirectory[0]?.folder === 'newest'}>
-			<a on:click={() => { $currentDirectory = [{interpretedTitle: 'Recently Added', isDynamicFolder: true, folder: 'newest'}]  }}>Recently Added</a></li>
-		<li class:selected = {$currentDirectory[0]?.isDynamicFolder && $currentDirectory[0]?.folder === 'starred'}>
-			<a on:click={() => { $currentDirectory = [{interpretedTitle: 'Starred', isDynamicFolder: true, folder: 'starred'}]  }}>Starred</a></li>
-		<li class:selected = {$currentDirectory[0]?.isDynamicFolder && $currentDirectory[0]?.folder === 'frequent'}>
-			<a on:click={() => { $currentDirectory = [{interpretedTitle: 'Most Played', isDynamicFolder: true, folder: 'frequent'}]  }}>Most Played</a></li>
-		<li class:selected = {$currentDirectory[0]?.isDynamicFolder && $currentDirectory?.folder === 'recent'}>
-			<a on:click={() => { $currentDirectory = [{interpretedTitle: 'Recently Played', isDynamicFolder: true, folder: 'recent'}]  }}>Recently Played</a></li>
+		<li class:selected = {$currentDirectory?.id === 'random'}>
+			<a on:click={() => { askForDynamicFolder('random') }}>Random</a></li>
+		<li	class:selected = {$currentDirectory?.id === 'newest'}>
+			<a on:click={() => { askForDynamicFolder('newest') }}>Recently Added</a></li>
+		<li class:selected = {$currentDirectory?.id === 'starred'}>
+			<a on:click={() => { askForDynamicFolder('starred') }}>Starred</a></li>
+		<li class:selected = {$currentDirectory?.id === 'frequent'}>
+			<a on:click={() => { askForDynamicFolder('frequent') }}>Most Played</a></li>
+		<li class:selected = {$currentDirectory?.id === 'recent'}>
+			<a on:click={() => { askForDynamicFolder('recent') }}>Recently Played</a></li>
 	</ul>
 	<ul class=topLevel>
 		<!-- We either show the select-ed discography, or the only one -->
 		{#if discographies.length > 0 && currentDiscography != null}
 		{#each discographies[currentDiscography]?.folders as f}
-			<li in:slide|global class:selected={$currentDirectory[currentDiscography]?.id === f.id}>
-				<a on:click={() => { $currentDirectory = [removeCircularCall(f)] }}>
+			<li in:slide|global class:selected={$currentDirectory?.id === f.id}>
+				<a on:click={() => { $currentDirectory = { id: f.id } }}>
 					{f.interpretedTitle}
 				</a>
 			</li>

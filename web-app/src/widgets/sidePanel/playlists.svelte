@@ -5,7 +5,6 @@
 	import { currentPlaylist, addToPlaylist, goToPlaylist, moveInPlaylist, removeFromPlaylist } from '$stores/playlist.js';
 	import { addToQueue, replaceQueueWith } from '$stores/queue.js';
 	import * as load from "$services/subsonic-playlist-api.js";
-	import { removeCircularCall } from "$services/subsonicToValueObject.js";
 	
 	let initializingDone = false;
 	
@@ -64,14 +63,13 @@
 		console.log('Enriching playlist');
 		
 		const songsIds = value.map(v => v.id);
-		const array = value.map(song => removeCircularCall(song));
 		
 		// Call to server
 		load.addSongsTo($currentPlaylist.id, songsIds).then(() => {
 			console.log('Success adding songs to playlist');			
 						
 			// Refreshing client data
-			$currentPlaylist.songs = ($currentPlaylist.songs||[]).concat(array || []);
+			$currentPlaylist.songs = ($currentPlaylist.songs||[]).concat(value || []);
 			$currentPlaylist.duration = 0;
 			$currentPlaylist.songs.forEach(s => $currentPlaylist.duration+= s.duration);
 			

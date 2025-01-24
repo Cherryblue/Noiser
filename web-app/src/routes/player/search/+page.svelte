@@ -5,8 +5,9 @@
 	import { currentDirectory, selection, searchResults } from "$stores/global.js";
 	import { addToQueue, replaceQueueWith } from '$stores/queue.js';
 	import { currentPlaylist, addToPlaylist } from '$stores/playlist.js';
-	import { removeCircularCall } from "$services/subsonicToValueObject.js";
 	import * as sorter from "$services/sorter.js";
+	
+	import { establishAbsolutePath, findCorrespondingArtist } from "$utils/songs-and-folders-utils.js";
 	
 	let items = [], 
 		folderSortStrategy,
@@ -18,6 +19,22 @@
 		songSortStrategy = localStorage?.getItem("viewer:songSortStrategy") || 'track';
 		applyStrategy('song', songSortStrategy);
 		applyStrategy('folder', folderSortStrategy);
+		
+		// When rendering the tests results, we search for artists folders along the absolute path.
+		// This may take a little time, which is why we do it here and not on search bar widget.
+		const promises = [];
+		$searchResults.songs.forEach(s => {
+			const currentPath = establishAbsolutePath(s);
+			promises.push(currentPath);
+			currentPath.then(path => {
+				s.interpretedArtist = findCorrespondingArtist(s.tags.artist, path);
+			});
+		});
+		Promise.all([...promises]).then(() => {
+			console.log('Research of all songs\' artists is over');
+			$searchResults.songs = $searchResults.songs;
+		});
+		
 		setTimeout(function() { initialized = true }, 50);
 	});
 	
@@ -85,20 +102,6 @@
 		$searchResults = $searchResults;
 	}
 	
-	function findCorrespondingArtist(artistList){
-		const listToLowerCase = artistList.toLowerCase();
-		const result = $currentDirectory.some(d => listToLowerCase.includes(d.interpretedTitle?.toLowerCase()));
-		if(result)
-			return $currentDirectory.slice(0,result+1);
-		return null;
-	}
-	
-	function enrichSong(s){
-		s.completePath = $currentDirectory;
-		s.possibleArtistPath = findCorrespondingArtist(s.tags.artist);
-		return s;
-	}
-	
 	function setupSelectionIfNeedBe(){
 		if($selection == null || $selection.from != 'folder')
 			$selection = { from: 'folder', positions: [], songs: [] };
@@ -137,7 +140,7 @@
 	<div class="mosaic items">
 	{#each $searchResults.albums as f}
 		<article class="album sequential" on:click={ () => {
-			$currentDirectory = $currentDirectory.concat(removeCircularCall(f));
+			$currentDirectory = { id: f.id };
 			goto('/player/browse', true);
 		}}>
 			<img src={f.coverURL} alt="No Cover" />
@@ -170,7 +173,7 @@
 						$selection.songs = $selection.songs.filter(el => el.id != s.id);
 					}else{
 						$selection.positions.push(i);
-						$selection.songs.push(enrichSong(s));
+						$selection.songs.push(s);
 					}
 					
 					// If nothing is selected, we must make it obvious to the selector
@@ -180,10 +183,15 @@
 					// Refreshing
 					$selection = $selection;
 				}} />
-				<td on:click|preventDefault={() => { $addToQueue = [s]; }}>{s.interpretedTitle}</td>
-				<td>{s.tags.artist}</td>
-				<td on:click={() => {
-					$currentDirectory = $currentDirectory = [{ interpretedTitle : s.interpretedAlbum, interpretedYear: s.interpretedYear, id: s.parent.id, pathIncomplete : true }];
+				<td class=clickable on:click|preventDefault={() => { $addToQueue = [s]; }}>{s.interpretedTitle}</td>
+				<td class:clickable={s.interpretedArtist!=null} on:click={() => {
+					if(s.interpretedArtist){
+						$currentDirectory = s.interpretedArtist;
+						goto('/player/browse', true);
+					}
+				}}>{s.tags.artist}</td>
+				<td class=clickable on:click={() => {
+					$currentDirectory = s.parent;
 					goto('/player/browse', true);
 				}}>{s.interpretedAlbum}</td>
 				<td>{s.interpretedYear}</td>

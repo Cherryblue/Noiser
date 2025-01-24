@@ -1,7 +1,7 @@
 import { get } from 'svelte/store';
 import * as xhr from "$services/xhr.js";
 import { url, fixedParams } from "$stores/global.js";
-import { songToVO, folderToVO } from "$services/subsonicToValueObject.js";
+import { songToVO, folderToVO2 } from "$services/subsonicToValueObject.js";
 
 function searchInAll(query, nbResults=50, pageNb=0){
 	const request = xhr.create("GET", get(url), `/rest/search2?${get(fixedParams)}&query=${query}`);
@@ -16,7 +16,7 @@ function searchInAll(query, nbResults=50, pageNb=0){
 					const dir = result['subsonic-response'].searchResult2;
 					const vo = {};
 					vo.songs = dir.song?.map(s => songToVO(s)) || [];
-					vo.albums = dir.album?.map(f => folderToVO(f)) || [];
+					vo.albums = dir.album?.map(f => folderToVO2(f)) || [];
 					vo.artists = dir.artist || [];
 					resolve(vo);
 				}else
@@ -60,7 +60,7 @@ function searchInAlbums(query, nbResults=50, pageNb=0){
 					&& result['subsonic-response'].searchResult2 != null){
 					console.log("Server returned understandable search results");
 					const dir = result['subsonic-response'].searchResult2;
-					resolve({albums: dir.album?.map(f => folderToVO(f)) || [], songs: []});
+					resolve({albums: dir.album?.map(f => folderToVO2(f)) || [], songs: []});
 				}else
 					reject(result['subsonic-response'] || result);
 		}).catch((err) => {

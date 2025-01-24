@@ -56,7 +56,6 @@
 		<li on:click={() => {
 			if(verify()) 
 				load.searchInAll(searchValue).then(r => {
-					console.log(r);
 					$searchResults = r;
 					if(!$page.url.pathname.includes('search'))
 						goto('/player/search', true);
@@ -68,7 +67,6 @@
 	<button class=textBtn on:click={() => { 
 		if(verify()) 
 			load.searchInAll(searchValue).then(r => {
-				console.log(r);
 				$searchResults = r;
 				if(!$page.url.pathname.includes('search'))
 					goto('/player/search', true);

@@ -45,23 +45,27 @@ function discographyToVO(subsonicItem, id, name){
 	return result;
 }
 
-function folderToVO(subsonicItem, isDynamicFolder=false){
+function folderToVO2(subsonicItem, isDynamicFolder=false){
 	// Initial Subsonic information
 	const result = {
+		// Whoami
 		id : subsonicItem.id,
+		coverURL: coverURL(subsonicItem?.coverArt), // Used only in case of subsonic search
 		recordedTitle : subsonicItem.name || subsonicItem.title || "",
 		parent : {
-			id : subsonicItem.parent
+			id: subsonicItem.parent
 		},
+		
+		isDynamicFolder : isDynamicFolder,
+		
+		// Content
 		folders : [],
 		songs : [],
+		
+		// Statistics
 		rootLvlSongsTotalDuration: 0,
 		songsFromSameAlbum : true
 	};
-
-	// Cover post-processing
-	result.coverURL = coverURL(subsonicItem.coverArt);
-	result.parent.coverURL = coverURL(result.parentId); // This is Gonic using ID for coverArt ID, but it could be wrong, or empty
 	
 	// Folder Title & Year
 	const tmpResult = interpretYearIn(result.recordedTitle);
@@ -69,21 +73,20 @@ function folderToVO(subsonicItem, isDynamicFolder=false){
 	result.interpretedYear = tmpResult.interpretedYear;
 	
 	const children = subsonicItem.child || subsonicItem.album || [];
+	
 	let lastAlbum = null;
 	children.forEach(c => {
 		// Folders/Albums post-processing
 		if(c.isDir || isDynamicFolder){
 			const f = {
 				id: c.id,
-				coverURL : coverURL(c.id),
+				coverURL : coverURL(c.coverArt),
 				recordedTitle : c.title || c.name,	// it's title for classic folders, name for dynamic folders...
-				parent: result
-				
+				parent: {
+					id: result.id,
+					interpretedTitle : result.interpretedTitle
+				}
 			};
-			
-			// When converting dynamic folders, parentObject has link with children, who each have their own parents.
-			if(isDynamicFolder)
-				f.parent = { id: c.parent, coverURL: coverURL(c.parent) };
 			
 			// Title & Year
 			const tmp = interpretYearIn(f.recordedTitle);
@@ -97,8 +100,11 @@ function folderToVO(subsonicItem, isDynamicFolder=false){
 			const s = {
 				id: c.id,
 				title: c.title,
-				parent: result,
 				url: songURL(c.id),
+				parent : {
+					id : result.id,
+					interpretedTitle : result.interpretedTitle,
+				},
 				tags: {
 					artist: c.artist,
 					album: c.album,
@@ -188,12 +194,14 @@ function playlistToVO(subsonicItem){
 			url: songURL(entry.id),
 			title : entry.title,
 			interpretedTitle : entry.title,
+			path: entry.path,
 			parent: {
 				id : entry.parent,
-				playlistId : result.id,
-				playlistName: result.interpretedTitle
 			},
-			path: entry.path,
+			playlist: {
+				id : result.id,
+				interpretedTitle : result.interpretedTitle
+			},
 			tags: {
 				year: entry.year,
 				artist: entry.artist,
@@ -201,12 +209,11 @@ function playlistToVO(subsonicItem){
 			},
 			interpretedYear: entry.year,
 			duration : entry.duration,
-			fromPlaylist: true
 		};
 		
 		// Folder Title & Year
 		const tmpResult = interpretYearIn(s.tags.album);
-		s.interpretedAlbum = tmpResult.interpretedTitle;
+		s.parent.interpretedTitle = tmpResult.interpretedTitle;
 		s.interpretedYear = tmpResult.interpretedYear;
 		
 		result.songs.push(s);
@@ -245,8 +252,7 @@ function songToVO(s){
 	// About the parent folder
 	song.parent = {
 		id: s.parent,
-		interpretedTitle: song.interpretedAlbum,
-		coverURL : ''
+		interpretedTitle: song.interpretedAlbum
 	};
 	
 	return song;
@@ -275,27 +281,4 @@ function interpretYearIn(title){
 		return {interpretedTitle: title, interpretedYear: ''};	
 }
 
-function removeCircularCall(item){
-	const tmp = {
-		id: item.parent?.id,
-		interpretedTitle: item.parent?.interpretedTitle,
-		interpretedYear: item.parent?.interpretedYear,
-		coverURL : item.parent?.coverURL
-	};
-	
-	if(item.fromPlaylist){
-		tmp.playlistId = item.parent.playlistId;
-		tmp.playlistName = item.parent.playlistName;
-		item.playlistId = tmp.PlaylistId;
-		item.playlistName = tmp.PlaylistName;
-	}
-	
-	item.parent = tmp;
-	
-	item.folders?.forEach(child => child.parent = null);
-	item.songs?.forEach(child => child.parent = null);
-	
-	return item;
-}
-
-export { folderToVO, discographyToVO, playlistsToVO, playlistToVO, removeCircularCall, songToVO }
+export { folderToVO2, discographyToVO, playlistsToVO, playlistToVO, songToVO }

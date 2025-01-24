@@ -17,10 +17,16 @@ table.songs th:not(.selector){
 	text-align: left;
 }
 
-table.songs td:nth-child(2){
+table.songs td.songName, table.songs td.clickable{
 	cursor: pointer;
 }
 
-table.songs td:nth-child(2):hover{
+table.songs td.songName:hover, table.songs td.clickable:hover{
 	text-decoration: underline;
+}
+
+table.songs td.trackNb{
+	max-width: 35px;
+	min-width: 35px;
+	width: 35px;
 }

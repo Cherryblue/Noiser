@@ -6,7 +6,6 @@
 	import { goToPlaylist } from '$stores/playlist.js';
 	import { addToQueue, replaceQueueWith, moveInQueue, removeFromQueue } from '$stores/queue.js';
 	import { currentDirectory, isConnected, selection } from "$stores/global.js";
-	import { removeCircularCall } from "$services/subsonicToValueObject.js";
 	
 	const dispatch = createEventDispatcher();
 	
@@ -36,6 +35,15 @@
 		
 		if(currentSong != null && queue.length === 0)
 			currentSong = null;
+		
+		// Update check V1.0.0 -> V1.1.x 
+		// --> Block should be deleted once everyone has upgraded to v1.1. So let's consider keeping it a few months just in case.
+		if(queue.length > 0 && queue[0].completePath){
+			queue = [];
+			currentSong = null;
+			localStorage.removeItem('player:playlist');
+			localStorage.removeItem('player:currentSong');
+		}
 		
 		setTimeout(() => { initializingDone = true;}, 1000);
 	}
@@ -70,11 +78,9 @@
 		if(i != null && i < queue.length)
 			// Song is already in the playlist, so we take the user action as wanting to play it instead of wanting to add it.
 			dispatch('play', i);
-		else{
+		else
 			// Default action
-			const array = value.map(song => removeCircularCall(song));
-			queue = queue.concat(array || []);
-		}
+			queue = queue.concat(value || []);
 		
 		if(oldLength == 0)
 			// If it's the first song in the playlist, we want to play it
@@ -90,14 +96,13 @@
 		if(null == value)
 			return;
 		
-		const array = value.map(song => removeCircularCall(song));
-		queue = array;
+		queue = value;
 		
 		// Reset actual preloading to re-trigger it with the correct new parameters.
 		dispatch('resetLoadingChoices');
 		
 		// If playlist has at least one song, play the first song
-		if(array.length > 0)
+		if(queue.length > 0)
 			dispatch('play', 0);
 		
 		$replaceQueueWith = null;
@@ -182,7 +187,7 @@
 			<th>Song</th>
 			<th>Artist</th>
 			<th>Album</th>
-			{#if queue.some(s => s.fromPlaylist == true)}
+			{#if queue.some(s => s.playlist != null)}
 			<th>Playlist</th>
 			{/if}
 			<th class=selector class:selected={$selection.from == 'queue' && $selection.positions.length == queue.length} on:click={() => {
@@ -196,25 +201,27 @@
 	{#each queue as song, i}
 		<tr class:selected={currentSong?.playlistNumber == i}>
 			<td class=songName on:click={() => dispatch('play',i)}>{song.interpretedTitle}</td>
-			<td on:click={() => { if(song.possibleArtistPath) $currentDirectory = song.possibleArtistPath; }} 
+			<td on:click={() => { 
+				if(song.interpretedArtist){ 
+					$currentDirectory = song.interpretedArtist; 
+					if(!$page.url.pathname.includes('browse'))
+						goto('/player/browse', true);
+				}
+			}}
 				class=songArtist
-				class:clickable={song.possibleArtistPath}>
+				class:clickable={song.interpretedArtist}>
 				{#if song.tags.artist != null && song.tags.artist != 'Unknown Artist'}
 					{song.tags.artist}
 				{/if}
 			</td>
 			<td class=songAlbum on:click={() => {
-				if(song.fromPlaylist || song.completePath == null)
-					$currentDirectory = [{ interpretedTitle : song.interpretedAlbum, interpretedYear: song.interpretedYear, id: song.parent.id, pathIncomplete : true }];
-				else
-					$currentDirectory = song.completePath;
-				
+				$currentDirectory = { id: song.parent.id }
 				if(!$page.url.pathname.includes('browse'))
 					goto('/player/browse', true);
-			}}>{song.interpretedAlbum}</td>
-			{#if queue.some(s => s.fromPlaylist == true)}
-				{#if song.fromPlaylist}
-					<td class=playlist on:click={() => { $goToPlaylist = song.parent.playlistId }}>{song.parent.playlistName}</td>
+			}}>{song.parent.interpretedTitle}</td>
+			{#if queue.some(s => s.playlist != null)}
+				{#if song.playlist != null}
+					<td class=playlist on:click={() => { $goToPlaylist = song.playlist.id }}>{song.playlist.interpretedTitle}</td>
 				{:else}
 					<td />
 				{/if}
@@ -294,14 +301,13 @@
 	}
 	
 	table tr td, table tr th{
+		max-width: 0;
 		height: 25px;
 		align-content: center;
 		text-align: left;
 		border: none;
 		padding: 3px;
 		margin: 0;
-		
-		max-width: 0;
 		white-space: nowrap;
 		text-overflow: ellipsis;
 		overflow: hidden;
@@ -309,16 +315,13 @@
 
 	table tr td:first-child, table tr th:first-child{
 		padding-left: 5px;
-		max-width: 3px;
+
 	}
 	
-	table tr td:nth-child(2){
-		max-width: 3px;
-	}
-	
-	table tr td:last-child, table tr th:last-child{
+	table tr td:last-child, table tr th.selector{
 		padding-right: 5px;
 		max-width: 20px;
+		min-width: 20px;
 		width : 20px;
 		text-align: center;
 	}

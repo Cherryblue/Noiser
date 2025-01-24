@@ -8,7 +8,7 @@ export const fixedParams = writable('');
 // About the albums
 export const showableAlbumNb = readable(50);
 export const coverArtSize = readable(400);
-export const currentDirectory = writable([]);
+export const currentDirectory = writable();
 
 // About the player
 export const playerCtxt = writable({});

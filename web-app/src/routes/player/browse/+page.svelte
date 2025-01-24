@@ -6,16 +6,18 @@
 	import { addToQueue, replaceQueueWith } from '$stores/queue.js';
 	import { currentPlaylist, addToPlaylist } from '$stores/playlist.js';
 	
-	import { removeCircularCall } from "$services/subsonicToValueObject.js";
+	import { folderManager } from "$services/folder-manager.js";
 	import * as load from "$services/subsonic-album-api.js";
 	import * as sorter from "$services/sorter.js";
+	
+	import { establishAbsolutePath, findCorrespondingArtist } from "$utils/songs-and-folders-utils.js";
 	
 	import ImageLoader from '$widgets/lazy-load/ImageLoader.svelte';
 	
 	let items = [], 
-		currentDir = null, 
-		folders = [], 
-		songs = [], 
+		path = [], 
+		folder = null,
+		parentFolder = null,
 		folderSortStrategy,
 		songSortStrategy,
 		initialized = false,
@@ -33,10 +35,17 @@
 			folderCover.onerror= () => {
 				folderCoverFallback = true
 			};
+			
+		if($currentDirectory != null)
+			loadNewDir($currentDirectory);
 	});
 	
 	$: saveStrategy('folder', folderSortStrategy);
 	$: saveStrategy('song', songSortStrategy);
+
+	$: songs = folder?.songs || [];
+	$: folders = folder?.folders || [];
+
 	
 	function saveStrategy(subject, strategy){
 		if(initialized){
@@ -100,138 +109,64 @@
 	}
 	
 	// Called when currentDirectory changes
-	$: (async() => {
-		currentDir = $currentDirectory[$currentDirectory.length-1];
-		loadNewDir();
-	})();
+	$: (async() => { loadNewDir($currentDirectory) })();
 	
-	async function loadNewDir(){
-		if(null != currentDir){
+	async function loadNewDir(dir){
+		if(null != dir){
 			// Option 1 : Wanted folder is a Dynamically created folder
-			if(currentDir?.isDynamicFolder){
-				load.dynamicFolders(currentDir.folder).then((result) => {
-					folders = result.folders;
-					songs = result.songs;
-				});
+			if(dir?.isDynamicFolder){
+				path = [];
+				load.dynamicFolders(dir.id).then((result) => { folder = result });
+				
+			// Option 2 : Wanted folder is a classic/regular folder
 			}else{
-				// Option 2 : Known path contains a dynamically created folder at root, instead of the real absolute path
-				if($currentDirectory.length > 1 && $currentDirectory[0].isDynamicFolder){
-					// Searching for absolute path
-					let parentChain = [currentDir], currentParent = currentDir.parent;
-					while(currentParent != null){
-						const tmp = await load.directory(currentParent.id);
-						if(['.', null, '-1', -1].includes(tmp.parent?.id))
-							currentParent = null;
-						else{
-							// Correction on previous object
-							parentChain[parentChain.length-1].parent.interpretedTitle = tmp.interpretedTitle;
-							parentChain[parentChain.length-1].parent.interpretedYear = tmp.interpretedYear;
+				folder = await folderManager.load(dir.id);
+				path = await establishAbsolutePath(folder);
 
-							// Saving progress
-							currentParent = tmp?.parent;
-							parentChain = [removeCircularCall(tmp)].concat(parentChain);
-						}
-					}
-					
-					// Changing currentDirectory will trigger function re-execution, so it's best to stop the current execution here.
-					$currentDirectory = parentChain;
-					return;
+				// Let's get the current folder cover, only known by its parent (this is subsonic api)
+				if(!['.', null, '-1', -1].includes(folder.parent)){
+					parentFolder = await folderManager.load(folder.parent.id);
+					const tmp = parentFolder.folders.find(f => f.id == folder.id);
+					folder.coverURL = tmp.coverURL;
 				}
-				
-				// Option 3 : Current path is incomplete
-				if($currentDirectory.length == 1 && $currentDirectory[0].pathIncomplete){
-					// Loading missing parent information
-					const firstRequestResult = await load.directory(currentDir?.id);
-					let parentChain = [firstRequestResult], currentFolder = firstRequestResult;
-
-					// Searching for absolute path
-					while(currentFolder != null){
-						if(['.', null, '-1', -1].includes(currentFolder.parent?.id)){
-							currentFolder = null;
-							parentChain = parentChain.slice(1,parentChain.length);
-						}else{
-							const tmp = await load.directory(currentFolder.parent?.id);
-							
-							// Correction on previous object
-							currentFolder.parent.interpretedTitle = tmp.interpretedTitle;
-							currentFolder.parent.interpretedYear = tmp.interpretedYear;
-							currentFolder.coverURL = 
-								tmp.folders.find(f => f.id == currentFolder.id)?.coverURL;
-							
-							// Saving progress
-							currentFolder = tmp;
-							parentChain = [removeCircularCall(tmp)].concat(parentChain);
-						}
-					}
-					
-					// Changing currentDirectory will trigger function re-execution, so it's best to stop the current execution here.
-					$currentDirectory = parentChain;
-					return;
-				}
-				
-				// Option 4 : We just navigate a normal folder 
-				if(null != currentDir.id)
-					load.directory(currentDir?.id).then((result) => {
-						folders = result.folders;
-						songs = result.songs;
-						currentDir.songsFromSameAlbum = result.songsFromSameAlbum; // doesn't seem to work
-					});
 			}
 		}
 	}
 	
-	function findCorrespondingArtist(artistList){
-		const listToLowerCase = artistList.toLowerCase();
-		const result = $currentDirectory.some(d => listToLowerCase.includes(d.interpretedTitle?.toLowerCase()));
-		if(result)
-			return $currentDirectory.slice(0,result+1);
-		return null;
-	}
-	
-	function enrichSong(s){
-		s.completePath = $currentDirectory;
-		s.possibleArtistPath = findCorrespondingArtist(s.tags.artist);
-		return s;
-	}
-	
 	function setupSelectionIfNeedBe(){
-		if($selection == null || $selection.from != 'folder')
+		if(0 == null || $selection.from != 'folder')
 			$selection = { from: 'folder', positions: [], songs: [] };
-	}
-	
-	function setDefaultImg(){
-		console.log(this);
-//		this.src=defaultImg;
 	}
 </script>
 
 <nav id=path>
 	<div class="mosaic alignItemsStretch">
-	{#each $currentDirectory as {interpretedTitle},i}
-		{#if $currentDirectory.length > 1 && i<$currentDirectory.length-1}
-			<a on:click={() => { if( i < $currentDirectory.length-1) $currentDirectory = $currentDirectory.slice(0,i+1) }}>{interpretedTitle}</a>
-		{/if}
-	{/each}
+		{#each path as f}
+		<a on:click={() => { $currentDirectory = {id: f.id} }}>{f.interpretedTitle}</a>
+		{/each}
 	</div>
 </nav>
 
 <section class="sequential nowrap">
-	{#if currentDir && !currentDir.isDynamicFolder}
+	{#if folder && !folder.isDynamicFolder}
 		<div class="folderCover mosaic">
-			{#if currentDir?.coverURL == "" || folderCoverFallback}
+			{#if folder?.coverURL == "" || folderCoverFallback}
 				<DefaultCover color="var(--main-color)" bg="var(--alternate-color)" size='155' />
 			{:else}
-				<img src={currentDir?.coverURL} bind:this={folderCover} />
+				<img src={folder?.coverURL} bind:this={folderCover} />
 			{/if}
 			<legend class="sequential alignItemsStart">
-				<h3 on:click={() => { songs.forEach(s => enrichSong(s)); $replaceQueueWith = songs; }}>{currentDir.interpretedTitle}</h3>
-				<span>{currentDir?.parent?.interpretedTitle}</span>
-				<span>{currentDir?.interpretedYear}</span>
+				<h3 on:click={() => { 
+					songs.forEach(s => s.interpretedArtist = findCorrespondingArtist(s.tags.artist, path)); 
+					$replaceQueueWith = songs; 
+				}}>{folder.interpretedTitle}</h3>
+				<span>{parentFolder?.interpretedTitle}</span>
+				<span>{folder.interpretedYear}</span>
 				<span style="flex: 1"></span>
-				{#if songs.length > 0 }
+				{#if folder?.songs?.length > 0 }
 					<form class="mosaic grouped">
 						<button class="textBtn mosaic alignItemsCenter" on:click={() => { 
-							songs.forEach(s => enrichSong(s));
+							songs.forEach(s => s.interpretedArtist = findCorrespondingArtist(s.tags.artist, path));
 							$addToQueue = songs; 
 						}}>
 							<i class="icon noiser-forward "/>
@@ -239,7 +174,6 @@
 						</button>
 						{#if $currentPlaylist != null}
 						<button class="textBtn mosaic alignItemsCenter" on:click={() => { 
-							console.log('click addToPlaylist'); 
 							$addToPlaylist = songs;
 						}}>
 							<i class="icon noiser-forward "/>
@@ -253,7 +187,7 @@
 	{/if}
 	
 	<nav id=sortCriteria class="mosaic nowrap spacedBetween">
-		{#if currentDir && !currentDir.isDynamicFolder && folders.length > 0}
+		{#if folder && !folder.isDynamicFolder && folders.length > 0}
 		<span>Albums by</span>
 		<ul id=folderSorting class="mosaic nowrap">
 			<li class:selected={folderSortStrategy == 'az'} on:click={() => {folderSortStrategy = 'az'}}>A to Z</li>
@@ -263,16 +197,16 @@
 		</ul>
 		{/if}
 		<span class=emptySpace></span>
-		{#if currentDir && !currentDir.isDynamicFolder && songs.length > 0}
+		{#if folder && !folder.isDynamicFolder && songs.length > 0}
 		<span>Songs by</span>
 		<ul id=songSorting class="mosaic nowrap">
-			{#if currentDir.songsFromSameAlbum}
+			{#if folder.songsFromSameAlbum}
 				<li class:selected={songSortStrategy == 'track'} on:click={() => {songSortStrategy = 'track'}}>Track</li>
 				<li class:selected={songSortStrategy == 'trackReversed'} on:click={() => {songSortStrategy = 'trackReversed'}}>Reverse</li>
 			{/if}
 			<li class:selected={songSortStrategy == 'az'} on:click={() => {songSortStrategy = 'az'}}>A to Z</li>
 			<li class:selected={songSortStrategy == 'za'} on:click={() => {songSortStrategy = 'za'}}>Z to A</li>
-			{#if currentDir.interpretedYear == null || currentDir.interpretedYear == "" }
+			{#if [null, ""].includes(folder.interpretedYear) }
 				<li	class:selected={songSortStrategy == 'dateReversed'} on:click={() => {songSortStrategy = 'dateReversed'}}>Newest First</li>
 				<li	class:selected={songSortStrategy == 'date'} on:click={() => {songSortStrategy = 'date'}}>Oldest First</li>
 			{/if}
@@ -289,9 +223,9 @@
 					if($selection?.positions?.length == songs.length)
 						$selection = { from: null, positions: [], songs: [] };
 					else
-						selection.set({from: 'folder', positions : [...Array(songs.length).keys()], songs : songs.map(el => enrichSong(el)) });
+						selection.set({from: 'folder', positions : [...Array(songs.length).keys()], songs : songs.map(el => el.interpretedArtist = findCorrespondingArtist(el.tags.artist, path)) });
 				}}/>
-				{#if currentDir.folders?.length > 0}
+				{#if folders.length == 0}
 					<th>Track</th>
 					<th>Song Name</th>
 				{:else}
@@ -309,8 +243,9 @@
 						$selection.positions = $selection.positions.filter(el => el != i);
 						$selection.songs = $selection.songs.filter(el => el.id != s.id);
 					}else{
-						$selection.positions.push(i);
-						$selection.songs.push(enrichSong(s));
+						s.interpretedArtist = findCorrespondingArtist(s.tags.artist, path);
+						$selection.positions.push(i);					
+						$selection.songs.push(s);
 					}
 					
 					// If nothing is selected, we must make it obvious to the selector
@@ -320,11 +255,11 @@
 					// Refreshing
 					$selection = $selection;
 				}} />
-				{#if currentDir.folders?.length > 0}
-					<td>{s.tags.track}</td>
-					<td on:click={() => { enrichSong(s); $addToQueue = [s]; }}>{s.interpretedTitle}</td>
+				{#if folders.length == 0}
+					<td class=trackNb>{s.tags.track}</td>
+					<td class=songName on:click={() => { s.interpretedArtist = findCorrespondingArtist(s.tags.artist, path); $addToQueue = [s]; }}>{s.interpretedTitle}</td>
 				{:else}
-					<td on:click={() => { enrichSong(s); $addToQueue = [s]; }}>{s.interpretedTitle}</td>
+					<td class=songName on:click={() => { s.interpretedArtist = findCorrespondingArtist(s.tags.artist, path); $addToQueue = [s]; }}>{s.interpretedTitle}</td>
 					<td>{s.tags.artist}</td>
 					<td>{s.interpretedYear}</td>
 				{/if}
@@ -333,13 +268,14 @@
 		{/each}
 		</table>
 	{/if}
-	{#each folders as f}
-		<article class="album sequential" on:click={ () => {$currentDirectory = $currentDirectory.concat(removeCircularCall(f))} } >
-			<div class=img><ImageLoader src={f.coverURL} alt=""></ImageLoader></div>
-			<!--<img loading="lazy" src={f.coverURL} alt="" on:error={setDefaultImg} />-->
-			<span>{f.interpretedTitle}</span>
-		</article>
-	{/each}
+	{#if folders.length > 0}
+		{#each folders as f}
+			<article class="album sequential" on:click={ () => { $currentDirectory = {id: f.id} }}>
+				<div class=img><ImageLoader src={f.coverURL} alt=""></ImageLoader></div>
+				<span>{f.interpretedTitle}</span>
+			</article>
+		{/each}
+	{/if}
 	</div>
 </section>
 

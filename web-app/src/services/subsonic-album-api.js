@@ -1,7 +1,7 @@
 import { get } from 'svelte/store';
 import * as xhr from "$services/xhr.js";
 import { url, fixedParams, coverArtSize } from "$stores/global.js";
-import { discographyToVO, folderToVO } from "$services/subsonicToValueObject.js";
+import { discographyToVO, folderToVO2 } from "$services/subsonicToValueObject.js";
 
 const size = 50;
 
@@ -72,6 +72,27 @@ function directory(id){
 	});
 }
 
+function regularFolder(id){
+	const request = xhr.create("GET", get(url), `/rest/getMusicDirectory?${get(fixedParams)}&id=${id}`);
+	return new Promise(
+		(resolve, reject) => {
+			xhr.proceedOnPromise(request, 'directory').then((result) => {
+				if(result != null 
+					&& result['subsonic-response'] != null 
+					&& result['subsonic-response'].status == "ok"
+					&& result['subsonic-response'].directory != null){
+					console.log("Server returned understandable folders");
+					const dir = result['subsonic-response'].directory;
+					resolve(folderToVO2(dir));
+				}else
+					reject(result['subsonic-response'] || result);
+		}).catch((err) => {
+			console.error("Could not load music folders");
+			console.log(err);
+		});
+	});
+}
+
 // For a given Album, tell where to find its cover
 function coverURL(id){
 	if(id == null)
@@ -97,7 +118,7 @@ function dynamicFolders(type){
 					&& result['subsonic-response'].albumList != null){
 					console.log("Server returned a correct response");
 					const dir = result['subsonic-response'].albumList;
-					resolve(folderToVO(dir,true));
+					resolve(folderToVO2(dir,true));
 				}else
 					reject(result['subsonic-response'] || result);
 		}).catch((err) => {
@@ -107,4 +128,4 @@ function dynamicFolders(type){
 	});
 }
 
-export {discographies, indexes, directory, dynamicFolders, coverURL, songURL};
+export {discographies, indexes, directory, regularFolder, dynamicFolders, coverURL, songURL};
