@@ -1,9 +1,22 @@
 <script>
 	import { fade, slide } from 'svelte/transition';
-	import { selection } from '$stores/global.js';
+	import { selection, currentDirectory } from '$stores/global.js';
 	import { currentPlaylist, addToPlaylist, goToPlaylist, moveInPlaylist, removeFromPlaylist } from '$stores/playlist.js';
 	import { addToQueue, replaceQueueWith, moveInQueue, removeFromQueue } from '$stores/queue.js';
-	
+	import { folderManager } from '$services/folder-manager.js';
+
+	let songsInCurrentFolder = [];
+
+		// Called when currentDirectory changes
+	$: if(null != $currentDirectory){
+		songsInCurrentFolder = [];
+		if(!['frequent', "newest", "random", "starred", "recent"].includes($currentDirectory.id))
+			setTimeout(async function(){
+				const tmp = await folderManager.load($currentDirectory.id);
+				songsInCurrentFolder = tmp?.songs;
+			},50);
+	}
+
 	// After each action on a selection, we simply forget about the last selection
 	function resetSelection(){
 		$selection = {
@@ -48,7 +61,31 @@
 <nav class="mosaic nowrap alignItemsStretch" class:emptySelection={!$selection.from}>	
 	<!--// from = null || array = null/empty -->
 	{#if $selection?.positions?.length == 0}
-		<span in:fade={{ delay: 500 }}>Currently no selection</span>
+	<form class="mosaic nowrap alignItemsStretch gap5" in:fade={{ delay: 500 }}>
+		<!--<span in:fade={{ delay: 500 }}>Currently no selection</span>-->
+		{#if songsInCurrentFolder?.length > 0}
+			<button class="textBtn mosaic nowrap alignItemsCenter" in:fade on:click={() => {
+				$replaceQueueWith = songsInCurrentFolder;
+			}}>
+				<i class="icon noiser-play" />
+				<span>Play</span>
+			</button>
+			<button class="textBtn mosaic nowrap alignItemsCenter" in:fade on:click={() => {
+				$addToQueue = songsInCurrentFolder;
+			}}>
+				<i class="icon noiser-forward "/>
+				<span>Add to Queue</span>
+			</button>
+			{#if $currentPlaylist != null}
+			<button class="textBtn mosaic nowrap alignItemsCenter" in:fade on:click={() => {
+				$addToPlaylist = songsInCurrentFolder;
+			}}>
+				<i class="icon noiser-forward "/>
+				<span>Add to Playlist</span>
+			</button>
+			{/if}
+		{/if}
+	</form>
 	{:else}
 	<form class="mosaic nowrap alignItemsStretch gap5" out:fade>
 		<span transition:slide= {{ axis: 'x' }} class="selected mosaic nowrap gap5 alignItemsCenter" on:click={resetSelection}>
@@ -78,7 +115,6 @@
 		
 		{#if $selection?.from == 'folder' && $currentPlaylist != null }
 			<button class="textBtn mosaic nowrap alignItemsCenter" on:click={() => { 
-				console.log('click selection addToPlaylist'); 
 				$addToPlaylist = $selection.songs;
 				resetSelection();
 			}}>

@@ -114,32 +114,10 @@
 				<img src={folder?.coverURL} bind:this={folderCover} />
 			{/if}
 			<legend class="sequential alignItemsStart">
-				<h3 on:click={() => { 
-					songs.forEach(s => s.interpretedArtist = findCorrespondingArtist(s.tags.artist, path)); 
-					$replaceQueueWith = songs; 
-				}}>{folder.interpretedTitle}</h3>
+				<h3>{folder.interpretedTitle}</h3>
 				<span>{parentFolder?.interpretedTitle}</span>
 				<span>{folder.interpretedYear}</span>
 				<span style="flex: 1"></span>
-				{#if folder?.songs?.length > 0 }
-					<form class="mosaic grouped">
-						<button class="textBtn mosaic alignItemsCenter" on:click={() => { 
-							songs.forEach(s => s.interpretedArtist = findCorrespondingArtist(s.tags.artist, path));
-							$addToQueue = songs; 
-						}}>
-							<i class="icon noiser-forward "/>
-							<div>Queue</div>
-						</button>
-						{#if $currentPlaylist != null}
-						<button class="textBtn mosaic alignItemsCenter" on:click={() => { 
-							$addToPlaylist = songs;
-						}}>
-							<i class="icon noiser-forward "/>
-							<div>Current Playlist</div>
-						</button>
-						{/if}
-					</form>
-				{/if}
 			</legend>
 		</div>
 	{/if}
@@ -441,43 +419,6 @@
 	
 	.folderCover h3{
 		margin-bottom: 0;
-		cursor: pointer;
-		position: relative;
-	}
-	
-	.folderCover h3:hover{
-		text-decoration: underline;
-	}
-	
-	.folderCover h3:before, .folderCover h3:after{
-		transition: opacity .3s;
-		opacity: 0;
-		position: absolute;
-	}
-	
-	.folderCover h3:before{
-		top: 5px;
-		right: -15px;
-		content: '';
-		border-top: 8px solid transparent;
-		border-bottom: 8px solid transparent;
-		border-right: 8px solid var(--alternate-color);
-	}
-	
-	.folderCover h3:after{
-		top: 1px;
-		right: -160px;
-		width: 140px;
-		padding: 3px;
-		font-size: 15px;
-		content: "Play all folder's songs";
-		background: var(--alternate-color);
-		color: var(--main-color);
-		border-radius: 5px;
-	}
-	
-	.folderCover h3:hover:before, .folderCover h3:hover:after{
-		opacity: 1;
 	}
 	
 	.folderCover button{
