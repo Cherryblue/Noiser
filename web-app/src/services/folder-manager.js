@@ -1,11 +1,21 @@
 import * as api from "$services/subsonic-album-api.js";
 
 const clientSide = typeof window !== 'undefined';
-//const validDuration = 60 * 60 * 24 * 1000; // Equals one day
-const validDuration = 60 * 60 * 1 * 1000; // Equals one hour
+let cacheRetentionHours = 1;
+
+if(clientSide){
+	const clearCacheChoice = JSON.parse(localStorage.getItem("settings:debug:clearCache")||false);
+	if(clearCacheChoice){
+		console.log('[DEBUG] Cache has been cleared');
+		localStorage.removeItem("browse:knownFolders"); // This is a Hard Reset debug option
+	}
+
+	cacheRetentionHours = JSON.parse(localStorage.getItem("settings:cacheRetentionHours")||1);
+}
+
+const validDuration = 60 * 60 * cacheRetentionHours * 1000;
 const initialStoreData = clientSide? localStorage.getItem("browse:knownFolders") : null;
 
-//if(clientSide) localStorage.removeItem("browse:knownFolders"); // This is a Hard Reset debug option
 
 class folderManager{
 	static knownFolders = initialStoreData ? JSON.parse(initialStoreData, reviver) : new Map();

@@ -8,11 +8,20 @@
 	import { currentDirectory, isConnected, selection } from "$stores/global.js";
 	
 	const dispatch = createEventDispatcher();
+	const clientSide = typeof window !== 'undefined';
 	
 	export let queue = [];
 	export let currentSong = null;
 	
 	let initializingDone = false;
+
+	if(clientSide){
+		const clearQueueChoice = JSON.parse(localStorage.getItem("settings:debug:clearQueue")||false);
+		if(clearQueueChoice){
+			console.log('[DEBUG] Queue has been cleared');
+			localStorage.removeItem("player:playlist"); // This is a Hard Reset debug option
+		}
+	}
 	
 	// Loading and Saving playlist from Local Storage
 	$: savingToLocalStorage('playlist', queue);
