@@ -259,7 +259,7 @@ function songToVO(s){
 }
 
 function interpretYearIn(title){
-	const regex1 = /^([0-9]{4})(?: ?- ?)([^ -].*)$/g; 	// Example : 2024 - Last Moments
+	const regex1 = /^([0-9]{4})(?: *- *)([^ -].*)$/g; 	// Example : 2024 - Last Moments
 	const regex2 = /^(.*)\ *\(([0-9]{4})\)$/g;			// Example : Last Moments (2024)
 
 	const regexResult1 = title.match(regex1);

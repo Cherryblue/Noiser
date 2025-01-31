@@ -3,9 +3,14 @@
 	import { browser } from '$app/environment';
 	import { Howl, Howler } from 'howler';
 	import { playerCtxt, isConnected, triggerPlay, changeVol, changeSong } from "$stores/global.js";
+
 	import * as load from "$services/subsonic-album-api.js";
+
+	import * as rnd from "$utils/random-songs-utils.js";
+
 	import ProgressBar from '$widgets/player/progressBar.svelte';
 	import RepeatBtn from '$widgets/player/repeatBtn.svelte';
+	import RandomBtn from '$widgets/player/randomBtn.svelte';
 	import Queue from '$widgets/player/queue.svelte';
 	import SubNav from '$widgets/player/SubNav.svelte';
 	
@@ -14,21 +19,23 @@
 	
 	// Shared variables Playlist, Songs, Volume
 	let currentSong, currentLegend=null, queue, vol, initiated = false;
-	
+
 	$: if(browser && currentSong != null)
 		currentLegend = {
 			title: queue[currentSong?.playlistNumber]?.interpretedTitle,
 			artist: queue[currentSong?.playlistNumber]?.tags.artist,
-			album: queue[currentSong?.playlistNumber]?.interpretedAlbum,
+			album: queue[currentSong?.playlistNumber]?.parent?.interpretedTitle,
 			coverURL: queue[currentSong?.playlistNumber]?.coverURL
 		};
 	else
 		currentLegend = null;
-	
+
 	// Variables / State machines
-	let loop, playingSong = false, nextSong = null;
-	
+	let loop, random, randomedPreviousSongs = [], playingSong = false, nextSong = null;
+
 	onMount(() => {
+		randomedPreviousSongs = JSON.parse(localStorage.getItem("player:previousRndSongs") || []);
+
 		if($isConnected){
 			if($playerCtxt == null)
 				$playerCtxt = {};
@@ -165,6 +172,49 @@
 		$playerCtxt?.current?.on('end',function() { playingSong = false }); // We remove when preloading, so we have to set it back again just in case
 		progressBar?.resetPreload();
 	}
+
+	// Reset Loading Choices
+	function resetRandomChoice(){
+		resetLoadingChoices();
+		randomedPreviousSongs = [];
+
+		// If user asks to go random, we check what is currently played, and consider the previous songs to not be included in future randomization
+		if(random && currentSong)
+			for(let i = 0 ; i <= currentSong.playlistNumber ; i++ )
+				randomedPreviousSongs.push(i);
+
+		localStorage.setItem("player:previousRndSongs", JSON.stringify(randomedPreviousSongs));
+	}
+
+	function songsDeleted(ev){
+		const positions = ev.detail;
+		if(random){
+			// Removing erased songs in queue
+			randomedPreviousSongs = randomedPreviousSongs.filter(s => !positions.includes(s));
+
+			// Taking into account that songs positions have now changed
+			randomedPreviousSongs = randomedPreviousSongs.map(s => s - positions.filter(p => p < s).length);
+		}
+	}
+
+	function songsMoved(ev){
+		const positions = ev.detail.positions;
+		const offset = ev.detail.offset;
+
+		randomedPreviousSongs =	randomedPreviousSongs.map(sIndex => {
+			if(positions.includes(sIndex)){
+				if(sIndex+offset>0 && sIndex+offset < queue.length)
+					return sIndex+offset;
+				else
+					return sIndex;
+			}else if(offset == 1 && positions.includes(sIndex-1))
+				return sIndex-1;
+			else if(offset == -1 && positions.includes(sIndex+1))
+				return sIndex+1;
+
+			return sIndex;
+		});
+	}
 	
 	function play(songNumberInPlaylist){
 		// console.log(`player : ${playerCtxt.current}\ncurrentSong : ${currentSong}\ncurrentPlaylistNumber : ${currentSong?.playlistNumber}\nsongNumber : ${songNumberInPlaylist}`);
@@ -216,14 +266,40 @@
 	}
 	
 	function previous(){
-		if(prepareSong(currentSong.playlistNumber-1)){
+		let previousSongNb = -1;
+		if(random){
+			const tmp = randomedPreviousSongs.findIndex(i => i == currentSong.playlistNumber);
+			if(null != tmp && randomedPreviousSongs.length > 0)
+				previousSongNb = randomedPreviousSongs[tmp-1];
+		}else{
+			if(currentSong.playlistNumber-1 >= 0)
+				previousSongNb = currentSong.playlistNumber-1;
+		}
+
+		if(previousSongNb >= 0 && prepareSong(previousSongNb)){
 			playWithTransition();
 			progressBar.start(currentSong.duration);
 		}
 	}
 	
 	function next(){
-		if(prepareSong(currentSong.playlistNumber+1)){
+		let nextSongNb = -1;
+		if(random){
+			// First case : we are currently re-listening to a previous randomized song, meaning next one has already been decided
+			if(randomedPreviousSongs[randomedPreviousSongs.length-1] != currentSong.playlistNumber){
+				const tmp = randomedPreviousSongs.findIndex(i => i == currentSong.playlistNumber);
+				nextSongNb = randomedPreviousSongs[tmp+1];
+			}
+			// Second and usual case : we need a new randomized song
+			else if(randomedPreviousSongs.length < queue.length){
+				nextSongNb = rnd.selectNewSong(randomedPreviousSongs, queue.length);
+				randomedPreviousSongs.push(nextSongNb);
+				localStorage.setItem("player:previousRndSongs", JSON.stringify(randomedPreviousSongs));
+			}
+		}else
+			nextSongNb = currentSong.playlistNumber+1;
+
+		if(nextSongNb >= 0 && prepareSong(nextSongNb)){
 			playWithTransition();
 			progressBar.start(currentSong.duration);
 		}
@@ -248,11 +324,25 @@
 		if(loop=='song')
 			return currentSong?.playlistNumber || -1;
 		
-		if((currentSong?.playlistNumber+1) < queue.length)
-			return currentSong.playlistNumber+1;
+		if(random){
+			if(randomedPreviousSongs.length == queue.length){
+				if(loop=='playlist')
+					return randomedPreviousSongs[0];
+
+				return -1;
+			}
+
+			const nextSongNb = rnd.selectNewSong(randomedPreviousSongs, queue.length);
+			randomedPreviousSongs.push(nextSongNb);
+			localStorage.setItem("player:previousRndSongs", JSON.stringify(randomedPreviousSongs));
+			return nextSongNb;
+		}else{
+			if((currentSong?.playlistNumber+1) < queue.length)
+				return currentSong.playlistNumber+1;
 		
-		if(loop=='playlist' && currentSong?.playlistNumber == (queue.length-1))
-			return 0;
+			if(loop=='playlist' && currentSong?.playlistNumber == (queue.length-1))
+				return 0;
+		}
 		
 		// There are real cases where no song has to be played next
 		return -1;
@@ -313,14 +403,20 @@
 		class:noiser-play-circle={!playingSong} 
 		class:noiser-pause-circle={playingSong} on:click={() => play()}></button>
 	<button class="icon reduced noiser-next" on:click={next}></button>
-	<ProgressBar on:preloadThreshold={preloadNextSong} on:loadThreshold={loadNextSong} bind:this={progressBar} />
+	<ProgressBar 	on:preloadThreshold={preloadNextSong}
+					on:loadThreshold={loadNextSong}
+					bind:this={progressBar} />
 	<RepeatBtn on:resetLoadingChoices={resetLoadingChoices} bind:loop />
-	<button class="icon noiser-stop-sign" on:click={stop}></button>
+	<RandomBtn on:resetRandomChoice={resetRandomChoice} bind:random />
 </aside>
 
 <SubNav bind:slider={vol} bind:currentLegend />
 
-<Queue on:resetLoadingChoices={resetLoadingChoices} on:play={(e) => play(e.detail) } on:stop={stop} bind:currentSong bind:queue />
+<Queue 	on:resetLoadingChoices={resetLoadingChoices}
+		on:resetRandomChoice={resetRandomChoice}
+		on:songsDeleted={songsDeleted}
+		on:songsMoved={songsMoved}
+		on:play={(e) => play(e.detail) } on:stop={stop} bind:currentSong bind:queue />
 {/if}
 
 <style>

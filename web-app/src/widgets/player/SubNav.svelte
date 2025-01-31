@@ -39,7 +39,7 @@
 	<strong>Playing :</strong>
 	<span>
 		{currentLegend.title}<!--
-		-->{#if currentLegend.album}, from {currentLegend.album}{/if}<!--
+		-->{#if currentLegend.album}, from {currentLegend.interpretedAlbum||currentLegend.album}{/if}<!--
 		-->{#if currentLegend.artist}, by {currentLegend.artist}{/if}
 	</span>
 	{:else}

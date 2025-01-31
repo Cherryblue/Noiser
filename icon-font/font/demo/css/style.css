@@ -319,3 +319,11 @@ icons
   content: "\ea26";
 }
 
+.noiser-dual-no-shuffle::before {
+  content: "\ea27";
+}
+
+.noiser-dual-shuffle::before {
+  content: "\ea28";
+}
+

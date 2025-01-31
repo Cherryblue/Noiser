@@ -52,7 +52,6 @@
 	
 	// Taking into account any playlist change from Viewer
 	addToPlaylist.subscribe((value) => {
-		console.log(value);
 		if(null == value || $currentPlaylist == null || actionOnPlaylistSemaphore || previousValue == value) 
 			return;
 		

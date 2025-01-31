@@ -108,7 +108,7 @@
 		queue = value;
 		
 		// Reset actual preloading to re-trigger it with the correct new parameters.
-		dispatch('resetLoadingChoices');
+		dispatch('resetRandomChoice');
 		
 		// If playlist has at least one song, play the first song
 		if(queue.length > 0)
@@ -140,6 +140,9 @@
 			if(currentSong)
 				currentSong.playlistNumber = queue.map(s => s.id).indexOf(currentSong.songId);
 			
+			// Dispatch before changing positions
+			dispatch('songsMoved', { positions : $selection.positions, offset: offset});
+
 			// Refreshing objects
 			$selection = {
 				from: 'queue',
@@ -180,6 +183,10 @@
 			// CurrentSong position must be revised
 			if(currentSong && target >= currentSong?.playlistNumber && target < queue.length)
 				currentSong.playlistNumber = queue.map(s => s.id).indexOf(currentSong.songId);
+
+			// For random list of previous songs kept in player.svelte, we notice it that the following songs have been removed
+			// If they were already randomely played, they must be retired, and index of previous ones must be revised
+			dispatch('songsDeleted', positions);
 		}
 	});
 	
