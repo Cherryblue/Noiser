@@ -5,6 +5,7 @@
 	import { playerCtxt, isConnected, triggerPlay, changeVol, changeSong } from "$stores/global.js";
 
 	import * as load from "$services/subsonic-album-api.js";
+	import { updateMediaSession } from '$services/os-interface.js';
 
 	import * as rnd from "$utils/random-songs-utils.js";
 
@@ -20,21 +21,23 @@
 	// Shared variables Playlist, Songs, Volume
 	let currentSong, currentLegend=null, queue, vol, initiated = false;
 
-	$: if(browser && currentSong != null)
+	$: if(browser && currentSong != null){
 		currentLegend = {
 			title: queue[currentSong?.playlistNumber]?.interpretedTitle,
 			artist: queue[currentSong?.playlistNumber]?.tags.artist,
 			album: queue[currentSong?.playlistNumber]?.parent?.interpretedTitle,
 			coverURL: queue[currentSong?.playlistNumber]?.coverURL
 		};
-	else
+		
+		updateMediaSession(currentLegend);
+	}else
 		currentLegend = null;
 
 	// Variables / State machines
 	let loop, random, randomedPreviousSongs = [], playingSong = false, nextSong = null;
 
 	onMount(() => {
-		randomedPreviousSongs = JSON.parse(localStorage.getItem("player:previousRndSongs") || []);
+		randomedPreviousSongs = JSON.parse(localStorage.getItem("player:previousRndSongs") || '[]');
 
 		if($isConnected){
 			if($playerCtxt == null)
@@ -357,8 +360,8 @@
 		$playerCtxt.current = createHowlerFor(currentSong.url);
 		$playerCtxt.current.on('load', function(){
 			$playerCtxt.current.fade(0,vol/100,200);
-			$playerCtxt.previous.fade(vol/100,0,200);
-			setTimeout(function(){ $playerCtxt.previous.unload(); $playerCtxt.previous = null; },200);
+			$playerCtxt.previous?.fade(vol/100,0,200);
+			setTimeout(function(){ $playerCtxt.previous?.unload(); $playerCtxt.previous = null; },200);
 		});
 		
 		$playerCtxt.current.play();
