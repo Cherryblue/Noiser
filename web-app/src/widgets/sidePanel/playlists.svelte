@@ -5,6 +5,7 @@
 	import { currentPlaylist, addToPlaylist, goToPlaylist, moveInPlaylist, removeFromPlaylist } from '$stores/playlist.js';
 	import { addToQueue, replaceQueueWith } from '$stores/queue.js';
 	import * as load from "$services/subsonic-playlist-api.js";
+	import { downloadObjToJSON } from '$utils/file-utils.js';
 	
 	let initializingDone = false;
 	
@@ -182,7 +183,6 @@
 		</button>
 	</form>
 	{/if}
-	<div class="topLevel sequential nowrap alignItemsStretch">
 		{#if $currentPlaylist == null}
 		<ul>
 			{#if !creatingPlaylist}
@@ -191,6 +191,7 @@
 				</li>
 			{/if}
 			
+			<div class="topLevel sequential nowrap alignItemsStretch">
 			<!-- We either show the select-ed discography, or the only one -->
 			{#each playlists as p}
 				<li in:slide class="mosaic nowrap spacedBetween alignItemsCenter">
@@ -200,10 +201,11 @@
 					<i class="icon noiser-trash" on:click={removePlaylist.bind(null,p.id)} />
 				</li>
 			{/each}
+			</div>
 		</ul>
 		{:else}
-			<form class="mosaic nowrap grouped centered">
-				<button class="textBtn mosaic alignItemsCenter" on:click={() => {
+			<form class="mosaic nowrap grouped stretched">
+				<button class="textBtn mosaic alignItemsCenter centered" on:click={() => {
 					if(currentSelection.length > 0)
 						$replaceQueueWith = currentSelection.map(s => $currentPlaylist.songs[s]);
 					else
@@ -212,16 +214,16 @@
 					<i class="icon noiser-play" />
 					<span>Play All</span>
 				</button>
-				<button class="textBtn mosaic alignItemsCenter" on:click={() => {
+				<button class="textBtn mosaic alignItemsCenter centered" on:click={() => {
 					if(currentSelection.length > 0)
 						$addToQueue = currentSelection.map(s => $currentPlaylist.songs[s]);
 					else
 						$addToQueue = $currentPlaylist.songs;
 				}}>
-					<i class="icon noiser-forward" />
+					<i class="icon noiser-forward " />
 					<span>Add playlist to Queue</span>
 				</button>
-				<button class="textBtn mosaic alignItemsCenter" on:click={() => {
+				<button class="textBtn mosaic alignItemsCenter centered" on:click={() => {
 					currentSelection = [];
 					$currentPlaylist = null;
 					savingToLocalStorage('currentPlaylist', null); 
@@ -235,6 +237,17 @@
 			{@const seconds = ($currentPlaylist.duration - hours*3600 - minutes*60)}
 			<table>
 				<tr>
+					<td>Import / Export</td>
+					<td><button class=textBtn on:click={() => {
+						//$currentPlaylist.songs.map(s => { title: s.interpretedTitle, album: s.})
+						downloadObjToJSON($currentPlaylist.songs, 'playlist.json');
+					}}>Export Playlist</button></td>
+				</tr>
+				<!--<tr>
+					<td>Server Repair Link</td>
+					<td><button class=textBtn>Re-index playlist items</button></td>
+				</tr>-->
+				<tr>
 					<td>Visibility</td>
 					<td class=grouped>
 						<button class="textBtn disabled" class:selected={$currentPlaylist.public}>Public</button><!--
@@ -246,44 +259,45 @@
 					<td>{hours} hr(s), {minutes} mn(s), {seconds} scd(s)</td>
 				</tr>
 			</table>
-			<table class=selectableContent>
-				<tr>
-					<th>{$currentPlaylist.songs.length} songs</th>
-					<th class=selector class:selected={$selection.from == 'playlist' && $selection?.positions.length == $currentPlaylist?.songs?.length} on:click={() => {
-						setupSelectionIfNeedBe();
-						if($selection?.positions?.length == $currentPlaylist?.songs?.length)
-							$selection = { from: null, positions: [], songs: [] };
-						else
-							selection.set({ from: 'playlist', positions : [...Array($currentPlaylist?.songs.length).keys()], songs : $currentPlaylist?.songs });
-					}}/>
-				</tr>
-				{#each $currentPlaylist.songs as s,i}
-				<tr>
-					<td><a on:click={() => { 
-						$addToQueue = [s];
-					}}>{s.interpretedTitle}</a></td>
-					<td class="mosaic spacedAround selector" class:selected={$selection.from == 'playlist' && $selection.positions.includes(i)} on:click={() => {
-						setupSelectionIfNeedBe();
-						if($selection.positions.includes(i)){
-							$selection.positions = $selection.positions.filter(el => el != i);
-							$selection.songs = $selection.songs.filter(el => el.id != s.id);
-						}else{
-							$selection.positions.push(i);
-							$selection.songs.push(s);
-						}
-						
-						// If nothing is selected, we must make it obvious to the selector
-						if($selection.positions.length == 0)
-							$selection.from = null;
-						
-						// Refreshing
-						$selection = $selection;
-					}} />
-				</tr>
-				{/each}
-			</table>
+			<div class="topLevel sequential nowrap alignItemsStretch">
+				<table class=selectableContent>
+					<tr>
+						<th>{$currentPlaylist.songs.length} songs</th>
+						<th class=selector class:selected={$selection.from == 'playlist' && $selection?.positions.length == $currentPlaylist?.songs?.length} on:click={() => {
+							setupSelectionIfNeedBe();
+							if($selection?.positions?.length == $currentPlaylist?.songs?.length)
+								$selection = { from: null, positions: [], songs: [] };
+							else
+								selection.set({ from: 'playlist', positions : [...Array($currentPlaylist?.songs.length).keys()], songs : $currentPlaylist?.songs });
+						}}/>
+					</tr>
+					{#each $currentPlaylist.songs as s,i}
+					<tr>
+						<td><a on:click={() => {
+							$addToQueue = [s];
+						}}>{s.interpretedTitle}</a></td>
+						<td class="mosaic spacedAround selector" class:selected={$selection.from == 'playlist' && $selection.positions.includes(i)} on:click={() => {
+							setupSelectionIfNeedBe();
+							if($selection.positions.includes(i)){
+								$selection.positions = $selection.positions.filter(el => el != i);
+								$selection.songs = $selection.songs.filter(el => el.id != s.id);
+							}else{
+								$selection.positions.push(i);
+								$selection.songs.push(s);
+							}
+
+							// If nothing is selected, we must make it obvious to the selector
+							if($selection.positions.length == 0)
+								$selection.from = null;
+
+							// Refreshing
+							$selection = $selection;
+						}} />
+					</tr>
+					{/each}
+				</table>
+			</div>
 		{/if}
-	</div>
 </aside>
 
 <style>
@@ -300,7 +314,7 @@
 		padding: 0;
 		margin: 0;
 	}
-	
+
 	form{
 		width: calc(100% - 30px);
 		padding: 2px 15px;

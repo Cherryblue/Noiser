@@ -8,7 +8,7 @@ article.album{
 }
 
 article.album:hover{
-	background: var(--main-third-color);
+	background: var(--third-color);
 }
 
 article.album .img, article.album img{
@@ -27,6 +27,6 @@ article.album:before{
 	left: 15px;
 	top: 10px;
 	
-	border-bottom: 3px solid var(--main-third-color);
-	border-right: 3px solid var(--main-third-color);
+	border-bottom: 3px solid var(--third-color);
+	border-right: 3px solid var(--third-color);
 }

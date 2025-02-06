@@ -46,6 +46,7 @@
 	$: songs = folder?.songs || [];
 	$: folders = folder?.folders || [];
 
+	$: sectionRow = (folder && !folder.isDynamicFolder) ? 'mainRow / span 1' : 'subNav / span 4';
 	
 	function saveStrategy(subject, strategy){
 		if(initialized){
@@ -105,23 +106,23 @@
 	</div>
 </nav>
 
-<section class="sequential nowrap">
-	{#if folder && !folder.isDynamicFolder}
-		<div class="folderCover mosaic">
-			{#if folder?.coverURL == "" || folderCoverFallback}
-				<DefaultCover color="var(--main-color)" bg="var(--alternate-color)" size='155' />
-			{:else}
-				<img src={folder?.coverURL} bind:this={folderCover} />
-			{/if}
-			<legend class="sequential alignItemsStart">
-				<h3>{folder.interpretedTitle}</h3>
-				<span>{parentFolder?.interpretedTitle}</span>
-				<span>{folder.interpretedYear}</span>
-				<span style="flex: 1"></span>
-			</legend>
-		</div>
+{#if folder && !folder.isDynamicFolder}
+<div class="folderCover mosaic">
+	{#if folder?.coverURL == "" || folderCoverFallback}
+		<DefaultCover color="var(--main-color)" bg="var(--alternate-color)" size='155' />
+	{:else}
+		<img src={folder?.coverURL} bind:this={folderCover} />
 	{/if}
-	
+	<legend class="sequential alignItemsStart">
+		<h3>{folder.interpretedTitle}</h3>
+		<span>{parentFolder?.interpretedTitle}</span>
+		<span>{folder.interpretedYear}</span>
+		<span style="flex: 1"></span>
+	</legend>
+</div>
+{/if}
+
+<section class="sequential nowrap" style="--sectionRow: {sectionRow}">
 	<nav id=sortCriteria class="mosaic nowrap spacedBetween">
 		{#if folder && !folder.isDynamicFolder && folders.length > 0}
 		<span>Albums by</span>
@@ -232,6 +233,7 @@
 		So we could import them only once, and they still would work for the other containers, but this would hide us the dependencies.
 		Thus here they are, but it could still work if you removed them (...probably :)) */
 	@import '$widgets/commonStyling/selectableContent.css';
+	@import '$widgets/commonStyling/sortPanel.css';
 	@import '$widgets/commonStyling/folders.css';
 	@import '$widgets/commonStyling/songs.css';
 	
@@ -304,58 +306,10 @@
 		border-left-color: var(--main-color);
 	}
 	
-	nav#sortCriteria{
-		background: var(--alternate-color);
-		color: var(--main-color);
-		
-		border-radius: 0 0 5px 5px;
-		
-		height: 28px;
-		flex-shrink: 0;
-		width: calc(100% - 10px);
-		margin: 0 5px;
-		overflow-x: hidden;
-	}
-	
-	nav#sortCriteria *{
-		text-align: center;
-		align-content: center;	
-	}
-	
-	nav#sortCriteria span{
-		padding: 0px 10px;
-		user-select: none;
-	}
-	
-	nav#sortCriteria span.emptySpace{
-		flex: 1;
-		flex-shrink: 1;
-	}
-	
-	nav#sortCriteria ul{
-		margin: 0; padding: 0;
-		overflow: hidden;
-		flex-shrink: 0;
-		flex-grow: 0;
-	}
-	
-	nav#sortCriteria ul li{
-		display: inline-block;
-		transition: background .3s, color .3s;
-		cursor: pointer;
-		min-width: 90px;
-		padding: 0 5px;
-	}
-	
-	nav#sortCriteria ul li.selected{
-		background: var(--main-second-color);
-		color: var(--alternate-color);
-	}
-	
 	section{
-		background: var(--main-second-color);
+		background: var(--main-second);
 		grid-column: mainColumn / span 3;
-		grid-row: subNav / span 2;		
+		grid-row: var(--sectionRow);
 		overflow: hidden;
 	}
 	
@@ -383,19 +337,36 @@
 	}
 	
 	.folderCover{
+		grid-column: mainColumn / span 3;
+		grid-row: subNav / span 2;
+		position: relative;
+
 		background: var(--third-color);
 		/*background: linear-gradient(var(--alternate-second-color),var(--alternate-second-color), var(--alternate-third-color));*/
 		color: var(--alternate-color);
 		/*color: var(--main-color);*/
-		padding: 10px 10px 5px 10px;
+		padding: 12px;
 		margin: 0 5px;
-		width: calc(100% - 30px);
+		border-radius: 0 0 5px 5px;
+	}
+
+	.folderCover:after{
+		content: '';
+		position: absolute;
+		left: -5px;
+		top: 0;
+		width: calc(100% + 10px);
+		height: 100%;
+		z-index: -1;
+		background: var(--main-second);
 	}
 	
 	.folderCover img,
 	.folderCover div.img{
 		width: 155px;
 		height: 155px;
+		border-radius: 5px;
+		border: 2px solid var(--selection-color);
 	}
 	
 	.folderCover div.img{

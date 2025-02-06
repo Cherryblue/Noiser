@@ -34,7 +34,7 @@
 	let loop, random, randomedPreviousSongs = [], playingSong = false, nextSong = null;
 
 	onMount(() => {
-		randomedPreviousSongs = JSON.parse(localStorage.getItem("player:previousRndSongs") || []);
+		randomedPreviousSongs = JSON.parse(localStorage.getItem("player:previousRndSongs") || '[]');
 
 		if($isConnected){
 			if($playerCtxt == null)

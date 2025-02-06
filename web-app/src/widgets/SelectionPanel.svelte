@@ -164,8 +164,8 @@
 	nav{
 		grid-column: mainColumn / span 1;
 		grid-row: title / span 1;
-		background: none;
-		margin: 5px;
+		background: var(--main-second);
+		padding: 5px;
 		user-select: none;
 	}
 	

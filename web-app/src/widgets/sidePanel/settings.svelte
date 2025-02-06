@@ -1,11 +1,14 @@
 <script>
 	import { onMount } from 'svelte';
+	import Enabler from './settings/enabler.svelte';
+
 	let initializingDone = false,
 	lastModificationDate,
 	startupFolder,
 	clearQueue,
 	clearCache,
-	cacheRetentionHours;
+	cacheRetentionHours,
+	smartQueue;
 	
 	onMount(() => {
 		let tmp = null;
@@ -25,17 +28,6 @@
 		if(tmp == null)
 			localStorage.setItem('settings:cacheRetentionHours', JSON.stringify(1));
 		cacheRetentionHours = JSON.parse(tmp) || 1;
-
-		// Loading Debug Commmands status
-		tmp = localStorage.getItem('settings:debug:clearQueue');
-		if(tmp == null)
-			localStorage.setItem('settings:debug:clearQueue', JSON.stringify(false));
-		clearQueue = JSON.parse(tmp) || false;
-
-		tmp = localStorage.getItem('settings:debug:clearCache');
-		if(tmp == null)
-			localStorage.setItem('settings:debug:clearCache', JSON.stringify(false));
-		clearCache = JSON.parse(tmp) || false;
 
 		setTimeout(function() { 
 			console.log("Settings initialized");
@@ -59,6 +51,13 @@
 				lastModificationDate = tmp.toString().split(' ')?.slice(0, 5).join(' ');
 			}
 		}
+	}
+
+	function refreshDate(){
+		// Refreshing update date
+		const tmp = new Date();
+		localStorage.setItem(`settings:lastModification`, tmp);
+		lastModificationDate = tmp.toString().split(' ')?.slice(0, 5).join(' ');
 	}
 </script>
 
@@ -101,31 +100,35 @@
 	<h3>Technical choices</h3>
 	<h4>Only modify them if you know what you're doing</h4>
 	<table>
-		<tr>
-			<td class=notDoneYet>Action style*</td>
-			<td class="mosaic stretched grouped">
-				<button class="textBtn" class:selected={true}>Fast Play</button>
-				<button class="textBtn disabled" class:selected={false}>Select on click</button>
-			</td>
-		</tr>
-		<tr>
-			<td class=notDoneYet>Keyboard Control*</td>
-			<td class="mosaic stretched grouped">
-				<button class="textBtn" class:selected={true}>Disabled</button>
-				<button class="textBtn disabled" class:selected={false}>Enabled</button>
-			</td>
-		</tr>
-		<tr>
-			<td class=notDoneYet>Regex on<br />Folder's Name*</td>
-			<td class="mosaic nowrap stretched grouped">
-				<button class="textBtn" class:selected={true}>YEAR - Real Title</button>
-				<button class="textBtn disabled" class:selected={false}>No interpretation</button>
-			</td>
-		</tr>
+		<Enabler 	on:refreshSettingsDate={refreshDate}
+					storageName="settings:actionStyle"
+					available={false}
+					defaultValue={true}
+					falseName="Select on click"
+					trueName="Fast Play"
+				>Action style*</Enabler>
+
+		<Enabler 	on:refreshSettingsDate={refreshDate}
+					storageName="settings:keyboard"
+				>Keyboard Control</Enabler>
+
+		<Enabler 	on:refreshSettingsDate={refreshDate}
+					storageName="settings:folderRegex"
+					available={false}
+					defaultValue={true}
+					falseName="No interpretation"
+					trueName="YEAR - Real Title"
+				>Regex on<br />Folder's Name*</Enabler>
+
+		<Enabler 	on:refreshSettingsDate={refreshDate}
+					storageName="settings:smartQueue"
+					bind:currentValue={smartQueue}
+					available={false}
+				>Smart Queue*</Enabler>
 		<tr>
 			<td>Cache Time Validity</td>
 			<td class="mosaic nowrap stretched grouped">
-				<input type=number bind:value={cacheRetentionHours} on:change={() => savingToLocalStorage('cacheRetentionHours', cacheRetentionHours)} />
+				<input type=number min=0 bind:value={cacheRetentionHours} on:change={() => savingToLocalStorage('cacheRetentionHours', cacheRetentionHours)} />
 				<span>hour(s)</span>
 			</td>
 		</tr>
@@ -134,48 +137,14 @@
 	<h3>Debug Commands</h3>
 	<h4>Usually used to undo any critical state of the application</h4>
 	<table>
-		<tr>
-			<td>Clear Queue on Startup</td>
-			<td class="mosaic nowrap stretched grouped">
-				<button class="textBtn"
-						class:selected={clearQueue === true}
-						on:click={() => {
-							if(!clearQueue){
-								clearQueue = true;
-								savingToLocalStorage('debug:clearQueue', true);
-							}
-						}}>True</button>
-				<button class="textBtn"
-						class:selected={clearQueue === false}
-						on:click={() => {
-							if(clearQueue){
-								clearQueue = false;
-								savingToLocalStorage('debug:clearQueue', false);
-							}
-						}}>False</button>
-			</td>
-		</tr>
-		<tr>
-			<td>Clear Cache on Startup</td>
-			<td class="mosaic nowrap stretched grouped">
-				<button class="textBtn"
-						class:selected={clearCache === true}
-						on:click={() => {
-							if(!clearCache){
-								clearCache = true;
-								savingToLocalStorage('debug:clearCache', true);
-							}
-						}}>True</button>
-				<button class="textBtn"
-						class:selected={clearCache === false}
-						on:click={() => {
-							if(clearCache){
-								clearCache = false;
-								savingToLocalStorage('debug:clearCache', false);
-							}
-						}}>False</button>
-			</td>
-		</tr>
+		<Enabler 	on:refreshSettingsDate={refreshDate}
+					storageName="debug:clearQueue"
+					bind:currentValue={clearQueue}
+				>Clear Queue on Startup</Enabler>
+		<Enabler 	on:refreshSettingsDate={refreshDate}
+					storageName="debug:clearCache"
+					bind:currentValue={clearCache}
+				>Clear Cache on Startup</Enabler>
 	</table>
 	<h4 class=notDoneYet>* : Options colored in orange are not yet available</h4>
 </aside>
@@ -197,10 +166,6 @@
 
 	table{
 		padding: 5px 15px;
-	}
-	
-	table tr td{
-		padding: 4px 0;
 	}
 	
 	.notDoneYet{

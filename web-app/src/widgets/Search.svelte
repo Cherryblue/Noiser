@@ -82,7 +82,7 @@
 		padding: 5px;
 		grid-column: mainColumn3 / span 1;
 		grid-row: title / span 1;
-		background: var(--main-second-color);
+		background: var(--main-second);
 	}
 	
 	input[type=text]{

@@ -65,6 +65,9 @@
 		<li class:selected = {$currentDirectory?.id === 'recent'}>
 			<a on:click={() => { askForDynamicFolder('recent') }}>Recently Played</a></li>
 	</ul>
+</aside>
+
+<aside class="controlPanel second sequential nowrap" on:click={() => { if(browser) goto('/player/browse', true); }}>
 	<ul class=topLevel>
 		<!-- We either show the select-ed discography, or the only one -->
 		{#if discographies.length > 0 && currentDiscography != null}
@@ -86,18 +89,35 @@
 		position : relative;
 		margin-bottom: 5px;
 	}
+
+	ul.autoAlbums:before{
+		content: '';
+		position: absolute;
+		bottom: -13px;
+		width: 80%;
+		left: 10%;
+		border-bottom: 2px solid var(--third-color);
+	}
 	
 	ul.autoAlbums:after{
 		position: absolute;
-		content: '';
-		width: 80%;
-		left: 10%;
-		bottom: -2.5px;
-		border-bottom: 2px dashed var(--main-color);
+		color: var(--third-color);
+		content: 'A-Z';
+		left: 50%;
+		padding: 0 5px;
+		transform: translateX(-50%);
+		bottom: -20px;
+		font-weight: 600;
+		background: var(--alternate-color);
+		z-index: 42;
 	}
-	
+
 	ul.topLevel li a::first-letter{
 		font-size: 1.1rem;
 		font-weight: bold;	
+	}
+
+	aside.controlPanel.second{
+		grid-row: mainRow / span 2 !important;
 	}
 </style>

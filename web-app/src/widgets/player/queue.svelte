@@ -288,7 +288,7 @@
 	aside{
 		position: relative;
 		grid-column: player / span 1;
-		grid-row: mainRow / span 1;	
+		grid-row: topContent / span 3;
 		overflow-y: auto;
 		overflow-x: hidden;
 		margin: 0 5px 0 5px;

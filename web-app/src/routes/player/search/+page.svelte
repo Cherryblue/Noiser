@@ -167,6 +167,7 @@
 		So we could import them only once, and they still would work for the other containers, but this would hide us the dependencies.
 		Thus here they are, but it could still work if you removed them (...probably :)) */
 	@import '$widgets/commonStyling/selectableContent.css';
+	@import '$widgets/commonStyling/sortPanel.css';
 	@import '$widgets/commonStyling/folders.css';
 	@import '$widgets/commonStyling/songs.css';
 
@@ -238,57 +239,15 @@
 	nav#path a:hover:after{
 		border-left-color: var(--main-color);
 	}
-	
+
 	nav#sortCriteria{
-		background: var(--alternate-color);
-		color: var(--main-color);
-		
 		border-radius: 0 0 5px 5px;
-		
-		height: 28px;
-		flex-shrink: 0;
-		width: calc(100% - 10px);
-		margin: 0 5px;
-		overflow-x: hidden;
-	}
-	
-	nav#sortCriteria *{
-		text-align: center;
-		align-content: center;	
-	}
-	
-	nav#sortCriteria span{
-		padding: 0px 10px;
-		user-select: none;
-	}
-	
-	nav#sortCriteria span.emptySpace{
-		flex: 1;
-	}
-	
-	nav#sortCriteria ul{
-		margin: 0; padding: 0;
-		overflow: hidden;
-		flex-shrink: 1;
-	}
-	
-	nav#sortCriteria ul li{
-		display: inline-block;
-		transition: background .3s, color .3s;
-		cursor: pointer;
-		min-width: 90px;
-		padding: 0 5px;
-	}
-	
-	nav#sortCriteria ul li.selected{
-		background: var(--main-second-color);
-		color: var(--alternate-color);
 	}
 	
 	section{
-		background: var(--main-second-color);
+		background: var(--main-second);
 		grid-column: mainColumn / span 3;
-		grid-row: subNav / span 2;		
+		grid-row: subNav / span 4;
 		overflow: hidden;
 	}
 	

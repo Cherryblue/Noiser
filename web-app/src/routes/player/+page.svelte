@@ -9,7 +9,7 @@
 <style>
 	div{
 		grid-column: mainColumn / span 3;
-		grid-row: mainRow / span 1;
+		grid-row: topContent / span 2;
 		user-select: none;
 		margin: auto;
 	}

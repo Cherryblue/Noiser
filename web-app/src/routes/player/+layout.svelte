@@ -78,6 +78,8 @@
 	<header id=viewerHeader />
 	<header id=TopRightHeader />
 
+	<aside id=afterFolderSpace/>
+
 	<SelectionPanel />
 	<Search />
 	
@@ -87,7 +89,7 @@
 		<button 
 			on:click={() => {currentTab="discography"}}
 			class:selected={currentTab=="discography"}>discography</button>
-		<button 
+		<button
 			on:click={() => {currentTab="playlists"}}
 			class:selected={currentTab=="playlists"}>playlists</button>
 		<!--<button	
@@ -117,13 +119,19 @@
 
 	section.globalContainer{
 		grid-template-columns: [player] max(25vw, 500px) [browser] max(15vw, 300px) [mainColumn] auto [mainColumn2] auto [mainColumn3] auto;
-		grid-template-rows: [title] 40px [mainNav] 60px [subNav] 30px [mainRow] auto [footer] 25px;
+		grid-template-rows: [title] 40px [mainNav] 60px [subNav] 30px [topContent] 155px [space] 25px [mainRow] auto [footer] 25px;
 	}
 	
 	header#TopRightHeader{
-		grid-column: mainColumn3 / span 1;
+		grid-column: mainColumn2 / span 1;
 		grid-row: title / span 1;
-		background: var(--main-second-color);
+		background: var(--main-second);
+	}
+
+	aside#afterFolderSpace{
+		grid-column: mainColumn / span 3;
+		grid-row: space / span 1;
+		background: var(--main-second);
 	}
 
 	header#playerHeader{

@@ -1,0 +1,54 @@
+nav#sortCriteria{
+    background: var(--alternate-color);
+    color: var(--main-color);
+
+    border-radius: 5px;
+
+    height: 24px;
+    flex-shrink: 0;
+    width: calc(100% - 10px);
+    margin: 0 5px;
+    padding: 5px 0;
+    overflow-x: hidden;
+}
+
+nav#sortCriteria *{
+    text-align: center;
+    align-content: center;
+}
+
+nav#sortCriteria span{
+    padding: 0px 10px;
+    user-select: none;
+}
+
+nav#sortCriteria span.emptySpace{
+    flex: 1;
+    flex-shrink: 1;
+}
+
+nav#sortCriteria ul{
+    margin: 0; padding: 0;
+    overflow: hidden;
+    flex-shrink: 0;
+    flex-grow: 0;
+}
+
+nav#sortCriteria ul li{
+    display: inline-block;
+    transition: background .3s, color .3s;
+    cursor: pointer;
+    min-width: 90px;
+    /*padding: 0 5px;*/
+    margin-right: 5px;
+    border-radius: 5px;
+}
+
+nav#sortCriteria ul li:hover:not(.selected){
+    background: var(--main-color);
+    color: var(--alternate-color);
+}
+
+nav#sortCriteria ul li.selected{
+    background: var(--selection-color);
+}
