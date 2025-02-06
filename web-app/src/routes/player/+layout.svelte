@@ -2,13 +2,12 @@
 	// Svelte dependencies
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
-	//import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 
 	// Functional dependencies
 	import { isConnected, config, playerCtxt } from "$stores/global.js";
 	import { logout } from "$services/subsonic-auth-api.js";
-	import { keyTriggered } from "$services/keyboard.js";
+	import { keyTriggered } from "$services/os-interface.js";
 	import { goToPlaylist } from '$stores/playlist.js';
 
 	// Static files
