@@ -16,7 +16,7 @@
 	let initializingDone = false;
 
 	if(clientSide){
-		const clearQueueChoice = JSON.parse(localStorage.getItem("settings:debug:clearQueue")||false);
+		const clearQueueChoice = JSON.parse(localStorage.getItem("debug:clearQueue")||false);
 		if(clearQueueChoice){
 			console.log('[DEBUG] Queue has been cleared');
 			localStorage.removeItem("player:playlist"); // This is a Hard Reset debug option

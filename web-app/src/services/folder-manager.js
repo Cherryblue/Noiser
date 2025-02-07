@@ -4,7 +4,7 @@ const clientSide = typeof window !== 'undefined';
 let cacheRetentionHours = 1;
 
 if(clientSide){
-	const clearCacheChoice = JSON.parse(localStorage.getItem("settings:debug:clearCache")||false);
+	const clearCacheChoice = JSON.parse(localStorage.getItem("debug:clearCache")||false);
 	if(clearCacheChoice){
 		console.log('[DEBUG] Cache has been cleared');
 		localStorage.removeItem("browse:knownFolders"); // This is a Hard Reset debug option
