@@ -113,17 +113,15 @@
 		if(null == checkerId)
 			checkerId = localStorage.getItem('progressBar:checkerId');
 		
+		console.log('stopping timer for next song');
 		clearInterval(checkerId);
+		clearTimeout(loadId);
 		
 		checkerId = null;
 		nextSongState = 'none';
 		songDuration = null;
 		localStorage.removeItem("player:songDuration");
 		localStorage.removeItem("player:songPosition");
-	}
-	
-	export function pate(){
-		console.log('pate');
 	}
 	
 	function seek(ev){
